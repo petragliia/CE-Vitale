@@ -1,4 +1,4 @@
-// components/EstoqueVet.jsx
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Table, Button, Tabs, AutoComplete, Form, notification, Modal, Input, DatePicker, Select, Dropdown, Menu } from "antd";
 import { EditOutlined, DeleteOutlined, LogoutOutlined, BellOutlined, PlusOutlined, EyeOutlined, EyeInvisibleOutlined, SwapOutlined } from "@ant-design/icons";
@@ -11,11 +11,11 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import moment from "moment";
 import Transferencia from "./Transferencia";
 import { stocks } from "../stocks";
-import "./EstoqueVet.css";
+import "./EstoquePrincipal.css";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-function EstoqueVet() {
+function EstoquePrincipal() {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [produtos, setProdutos] = useState([]);
@@ -28,8 +28,8 @@ function EstoqueVet() {
   const [atualizarTabs, setAtualizarTabs] = useState(0);
   const [showTransfer, setShowTransfer] = useState(false);
 
-  // Coleção referente ao estoque vet
-  const collectionName = stocks.vet;
+  // Coleção referente ao estoque principal
+  const collectionName = stocks.principal;
 
   const CORES_POR_CATEGORIA = useMemo(() => ({
     Medicamentos: "#1976D2",
@@ -160,6 +160,7 @@ function EstoqueVet() {
     };
   }, [produtos, CORES_POR_CATEGORIA]);
 
+  // Define as abas por categoria e a aba "Itens/Produtos"
   const tabsItems = [
     ...Object.keys(CORES_POR_CATEGORIA).map(categoria => {
       const produtosFiltrados = produtos.filter(p =>
@@ -226,7 +227,7 @@ function EstoqueVet() {
     <div className="estoque-container">
       <div className="header-fixo">
         <div className="header">
-          <h1 className="title">🐾 Estoque Internação</h1>
+          <h1 className="title">🐾 Estoque Principal</h1>
           <div className="header-buttons">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
               Novo Produto
@@ -270,7 +271,7 @@ function EstoqueVet() {
         </div>
       </div>
       {showTransfer ? (
-        <Transferencia sourceStock="internacao" onBack={() => setShowTransfer(false)} />
+        <Transferencia sourceStock="principal" onBack={() => setShowTransfer(false)} />
       ) : (
         <>
           <div className="controls-container">
@@ -365,4 +366,4 @@ function EstoqueVet() {
   );
 }
 
-export default EstoqueVet;
+export default EstoquePrincipal;

@@ -1,0 +1,89 @@
+.estoque-container {
+    background: #fff;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  
+  .header-fixo {
+    background: #f0f0f0;
+    padding: 15px 20px;
+    border-bottom: 2px solid #001f3f;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .header .title {
+    font-size: 1.8rem;
+    font-weight: 500;
+  }
+  
+  .header-buttons, .control-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+  }
+  
+  .search-bar-container {
+    margin: 20px 0;
+  }
+  
+  .grafico-toggle-container {
+    margin: 20px 0;
+  }
+  
+  .grafico-wrapper {
+    height: 300px;
+    position: relative;
+  }
+  
+  .acoes-container {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+  
+    .header .title {
+      font-size: 1.5rem;
+    }
+  
+    .header-buttons, .control-buttons {
+      flex-wrap: wrap;
+    }
+  
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .header .title {
+      font-size: 1.3rem;
+    }
+  
+    .grafico-wrapper {
+      height: 200px;
+    }
+  
+    .ant-modal {
+      max-width: 95vw;
+    }
+  }

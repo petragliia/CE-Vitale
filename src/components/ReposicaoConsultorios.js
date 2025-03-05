@@ -1,5 +1,5 @@
-// components/EstoqueVet.jsx
-import { useState, useEffect, useCallback, useMemo } from "react";
+
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Table, Button, Tabs, AutoComplete, Form, notification, Modal, Input, DatePicker, Select, Dropdown, Menu } from "antd";
 import { EditOutlined, DeleteOutlined, LogoutOutlined, BellOutlined, PlusOutlined, EyeOutlined, EyeInvisibleOutlined, SwapOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -10,12 +10,12 @@ import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import moment from "moment";
 import Transferencia from "./Transferencia";
-import { stocks } from "../stocks";
-import "./EstoqueVet.css";
+import { stocks } from "../stocks"; // APENAS UMA IMPORTAÇÃO
+import "./ReposicaoConsultorios.css";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-function EstoqueVet() {
+function ReposicaoConsultorios() {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [produtos, setProdutos] = useState([]);
@@ -28,8 +28,8 @@ function EstoqueVet() {
   const [atualizarTabs, setAtualizarTabs] = useState(0);
   const [showTransfer, setShowTransfer] = useState(false);
 
-  // Coleção referente ao estoque vet
-  const collectionName = stocks.vet;
+  // Coleção referente ao estoque de Reposição de Consultorios
+  const collectionName = stocks.reposicao;
 
   const CORES_POR_CATEGORIA = useMemo(() => ({
     Medicamentos: "#1976D2",
@@ -78,16 +78,15 @@ function EstoqueVet() {
   const removerProduto = async (id) => {
     Modal.confirm({
       title: "Confirmar exclusão?",
-      content: "Tem certeza de que deseja excluir este produto?",
       onOk: async () => {
         try {
-          await deleteDoc(doc(db, collectionName, id));
+          await deleteDoc(doc(db, collectionName, id)); 
           await carregarProdutos();
-          notification.success({ message: "Produto excluído com sucesso!" });
+          notification.success({ message: "Produto excluído!" });
         } catch (error) {
-          notification.error({ message: "Erro ao excluir produto", description: error.message });
+          notification.error({ message: "Erro ao excluir", description: error.message });
         }
-      },
+      }
     });
   };
 
@@ -226,7 +225,7 @@ function EstoqueVet() {
     <div className="estoque-container">
       <div className="header-fixo">
         <div className="header">
-          <h1 className="title">🐾 Estoque Internação</h1>
+          <h1 className="title">🐾 Reposição de Consultorios</h1>
           <div className="header-buttons">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
               Novo Produto
@@ -270,7 +269,7 @@ function EstoqueVet() {
         </div>
       </div>
       {showTransfer ? (
-        <Transferencia sourceStock="internacao" onBack={() => setShowTransfer(false)} />
+        <Transferencia sourceStock="reposicao" onBack={() => setShowTransfer(false)} />
       ) : (
         <>
           <div className="controls-container">
@@ -365,4 +364,4 @@ function EstoqueVet() {
   );
 }
 
-export default EstoqueVet;
+export default ReposicaoConsultorios;

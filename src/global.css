@@ -1,0 +1,53 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body, html {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #f7f7f7;
+    color: #001f3f;
+  }
+  
+  /* Melhorias para Mobile */
+  button, .ant-btn {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: #001f3f;
+    border: none;
+    color: #fff;
+    min-height: 40px;
+    padding: 8px 16px;
+    touch-action: manipulation;
+  }
+  
+  button:hover, .ant-btn:hover {
+    opacity: 0.9;
+  }
+  
+  /* Tabelas Responsivas */
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .ant-table {
+    min-width: 600px;
+  }
+  
+  /* Breakpoints Globais */
+  @media (max-width: 768px) {
+    html {
+      font-size: 15px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    html {
+      font-size: 14px;
+    }
+    
+    .ant-btn {
+      padding: 6px 12px;
+    }
+  }

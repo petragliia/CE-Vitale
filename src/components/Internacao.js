@@ -1,4 +1,3 @@
-// components/EstoqueVet.jsx
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Table, Button, Tabs, AutoComplete, Form, notification, Modal, Input, DatePicker, Select, Dropdown, Menu } from "antd";
 import { EditOutlined, DeleteOutlined, LogoutOutlined, BellOutlined, PlusOutlined, EyeOutlined, EyeInvisibleOutlined, SwapOutlined } from "@ant-design/icons";
@@ -10,12 +9,14 @@ import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import moment from "moment";
 import Transferencia from "./Transferencia";
+import "./Internacao.css";
 import { stocks } from "../stocks";
-import "./EstoqueVet.css";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-function EstoqueVet() {
+const collectionName = stocks.internacao;
+
+function Internacao() {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [produtos, setProdutos] = useState([]);
@@ -27,9 +28,6 @@ function EstoqueVet() {
   const [form] = Form.useForm();
   const [atualizarTabs, setAtualizarTabs] = useState(0);
   const [showTransfer, setShowTransfer] = useState(false);
-
-  // Coleção referente ao estoque vet
-  const collectionName = stocks.vet;
 
   const CORES_POR_CATEGORIA = useMemo(() => ({
     Medicamentos: "#1976D2",
@@ -69,7 +67,7 @@ function EstoqueVet() {
     } catch (error) {
       notification.error({ message: "Erro ao carregar produtos", description: error.message });
     }
-  }, [collectionName]);
+  }, []);
 
   useEffect(() => {
     if (currentUser) carregarProdutos();
@@ -81,7 +79,7 @@ function EstoqueVet() {
       content: "Tem certeza de que deseja excluir este produto?",
       onOk: async () => {
         try {
-          await deleteDoc(doc(db, collectionName, id));
+          await deleteDoc(doc(db, "produtosPrincipal", id));
           await carregarProdutos();
           notification.success({ message: "Produto excluído com sucesso!" });
         } catch (error) {
@@ -112,10 +110,10 @@ function EstoqueVet() {
       };
 
       if (produtoEditando) {
-        await updateDoc(doc(db, collectionName, produtoEditando.id), dados);
+        await updateDoc(doc(db, "produtosPrincipal", produtoEditando.id), dados);
         notification.success({ message: "Produto atualizado!" });
       } else {
-        await addDoc(collection(db, collectionName), { ...dados, createdAt: new Date() });
+        await addDoc(collection(db, "produtosPrincipal"), { ...dados, createdAt: new Date() });
         notification.success({ message: "Produto adicionado!" });
       }
       await carregarProdutos();
@@ -160,6 +158,7 @@ function EstoqueVet() {
     };
   }, [produtos, CORES_POR_CATEGORIA]);
 
+  // Define as abas por categoria e a nova aba "Itens/Produtos"
   const tabsItems = [
     ...Object.keys(CORES_POR_CATEGORIA).map(categoria => {
       const produtosFiltrados = produtos.filter(p =>
@@ -226,7 +225,7 @@ function EstoqueVet() {
     <div className="estoque-container">
       <div className="header-fixo">
         <div className="header">
-          <h1 className="title">🐾 Estoque Internação</h1>
+          <h1 className="title">Internação 🩺</h1>
           <div className="header-buttons">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
               Novo Produto
@@ -253,7 +252,7 @@ function EstoqueVet() {
                       Internação
                     </Menu.Item>
                     <Menu.Item key="4" onClick={() => navigate("/estoque-reposicao")}>
-                      Reposição de Consultorios
+                      Reposição de Consultórios
                     </Menu.Item>
                   </Menu>
                 }
@@ -270,7 +269,7 @@ function EstoqueVet() {
         </div>
       </div>
       {showTransfer ? (
-        <Transferencia sourceStock="internacao" onBack={() => setShowTransfer(false)} />
+        <Transferencia sourceStock="principal" onBack={() => setShowTransfer(false)} />
       ) : (
         <>
           <div className="controls-container">
@@ -336,6 +335,7 @@ function EstoqueVet() {
                     <Select.Option value="Comida">Comida</Select.Option>
                   </Select>
                 </Form.Item>
+                {/* Novo campo para escolher o tipo de quantidade */}
                 <Form.Item name="tipoQuantidade" label="Tipo de Quantidade" rules={[{ required: true, message: "Selecione o tipo de quantidade!" }]}>
                   <Select placeholder="Selecione...">
                     <Select.Option value="unitario">Unitário</Select.Option>
@@ -365,4 +365,4 @@ function EstoqueVet() {
   );
 }
 
-export default EstoqueVet;
+export default Internacao;
