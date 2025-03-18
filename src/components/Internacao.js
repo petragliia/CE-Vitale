@@ -86,7 +86,19 @@ function Internacao() {
           const docSnap = await getDoc(docRef);
           
           if (docSnap.exists()) {
+            const produtoData = docSnap.data();
             await deleteDoc(docRef);
+            
+            // Registrar a operação de remoção
+            await registrarOperacao(
+              currentUser.email,
+              'remocao',
+              produtoData.nome,
+              'Internação',
+              null,
+              produtoData.quantidade
+            );
+            
             await carregarProdutos();
             notification.success({ message: "Produto excluído com sucesso!" });
           } else {
@@ -126,12 +138,36 @@ function Internacao() {
 
         if (docSnap.exists()) {
           await updateDoc(docRef, dados);
+          
+          // Registrar a operação de atualização
+          await registrarOperacao(
+            currentUser.email,
+            'atualizacao',
+            dados.nome,
+            'Internação',
+            null,
+            dados.quantidade,
+            { valorUnitario: dados.valor }
+          );
+          
           notification.success({ message: "Produto atualizado!" });
         } else {
           notification.error({ message: "Produto não encontrado para atualização." });
         }
       } else {
-        await addDoc(collection(db, collectionName), { ...dados, createdAt: new Date() });
+        const docRef = await addDoc(collection(db, collectionName), { ...dados, createdAt: new Date() });
+        
+        // Registrar a operação de adição
+        await registrarOperacao(
+          currentUser.email,
+          'adicao',
+          dados.nome,
+          'Internação',
+          null,
+          dados.quantidade,
+          { valorUnitario: dados.valor, id: docRef.id }
+        );
+        
         notification.success({ message: "Produto adicionado!" });
       }
       await carregarProdutos();
