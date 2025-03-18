@@ -2,6 +2,8 @@
     background: #fff;
     padding: 20px;
     min-height: 100vh;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
   }
   
   .header-fixo {
@@ -121,12 +123,15 @@
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 15px;
+  width: 100%;
 }
 
 .titulo-estoque {
   font-size: 1.8rem;
   color: #0d47a1;
   margin: 0;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .search-container {
@@ -136,13 +141,15 @@
   margin-top: 10px;
   margin-bottom: 15px;
   width: 100%;
+  align-items: center;
 }
 
 .botoes-container {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   margin: 20px 0;
+  align-items: center;
 }
 
 .grafico-container {
@@ -178,6 +185,10 @@
 
 /* Estilos responsivos */
 @media (max-width: 768px) {
+  .estoque-container {
+    padding: 15px;
+  }
+  
   .header-container {
     flex-direction: column;
     align-items: flex-start;
@@ -190,6 +201,11 @@
   
   .search-container {
     flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .search-container .ant-input-search {
     width: 100%;
   }
   
@@ -198,27 +214,12 @@
     justify-content: space-between;
   }
   
-  .grafico-wrapper {
-    height: 200px;
+  .form-grid {
+    grid-template-columns: 1fr;
   }
   
-  /* Ajuste para tabelas */
-  .ant-table-wrapper {
-    overflow-x: auto;
-  }
-  
-  .ant-table-tbody tr td {
-    white-space: nowrap;
-    padding: 8px;
-  }
-  
-  /* Ajustes para modais */
   .ant-modal-body {
     padding: 16px 12px;
-  }
-  
-  .ant-form-item {
-    margin-bottom: 12px;
   }
 }
 
@@ -252,4 +253,39 @@
   .ant-modal-footer .ant-btn {
     margin-left: 8px;
   }
+}
+
+/* Alinhamento consistente para tabelas */
+.ant-table-wrapper {
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f0f5ff;
+  font-weight: 600;
+  color: #1a3e5a;
+}
+
+/* Espaçamento consistente para formulários */
+.ant-form-item {
+  margin-bottom: 16px;
+}
+
+/* Alinhamento para ações na tabela */
+.acoes-container {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Consistência em espaçamentos para modais */
+.ant-modal-body {
+  padding: 20px;
+}
+
+.ant-modal-footer {
+  padding: 15px 20px;
 }

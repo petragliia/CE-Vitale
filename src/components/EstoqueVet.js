@@ -1,5 +1,5 @@
 // components/EstoqueVet.jsx
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Table, Button, Tabs, AutoComplete, Form, notification, Modal, Input, DatePicker, Select, Dropdown } from "antd";
 import { EditOutlined, DeleteOutlined, LogoutOutlined, BellOutlined, PlusOutlined, EyeOutlined, EyeInvisibleOutlined, SwapOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ import moment from "moment";
 import Transferencia from "./Transferencia";
 import { stocks } from "../stocks";
 import "./EstoqueVet.css";
+import "./date-picker-mobile.css";
+import { registrarOperacao } from "../services/registroService";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -389,6 +391,9 @@ function EstoqueVet() {
                     disabledDate={current => current && current < moment().startOf("day")}
                     style={{ width: "100%" }}
                     placeholder="Selecione a data"
+                    inputReadOnly={true}
+                    className="date-picker-mobile"
+                    popupClassName="date-picker-popup-mobile"
                   />
                 </Form.Item>
               </div>

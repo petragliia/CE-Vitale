@@ -11,6 +11,7 @@ import moment from "moment";
 import Transferencia from "./Transferencia";
 import { stocks } from "../stocks";
 import "./EstoquePrincipal.css";
+import "./date-picker-mobile.css";
 import { registrarOperacao } from "../services/registroService";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -436,6 +437,9 @@ function EstoquePrincipal() {
                     disabledDate={current => current && current < moment().startOf("day")}
                     style={{ width: "100%" }}
                     placeholder="Selecione a data"
+                    inputReadOnly={true}
+                    className="date-picker-mobile"
+                    popupClassName="date-picker-popup-mobile"
                   />
                 </Form.Item>
               </div>

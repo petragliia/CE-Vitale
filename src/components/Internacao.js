@@ -10,7 +10,9 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import moment from "moment";
 import Transferencia from "./Transferencia";
 import "./Internacao.css";
+import "./date-picker-mobile.css";
 import { stocks } from "../stocks";
+import { registrarOperacao } from "../services/registroService";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -389,6 +391,9 @@ function Internacao() {
                     disabledDate={current => current && current < moment().startOf("day")}
                     style={{ width: "100%" }}
                     placeholder="Selecione a data"
+                    inputReadOnly={true}
+                    className="date-picker-mobile"
+                    popupClassName="date-picker-popup-mobile"
                   />
                 </Form.Item>
               </div>
