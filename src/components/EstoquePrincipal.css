@@ -1,0 +1,255 @@
+.estoque-container {
+    background: #fff;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  
+  .header-fixo {
+    background: #f0f0f0;
+    padding: 15px 20px;
+    border-bottom: 2px solid #001f3f;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .header .title {
+    font-size: 1.8rem;
+    font-weight: 500;
+  }
+  
+  .header-buttons, .control-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+  }
+  
+  .search-bar-container {
+    margin: 20px 0;
+  }
+  
+  .grafico-toggle-container {
+    margin: 20px 0;
+  }
+  
+  .grafico-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .grafico-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .grafico-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .grafico-wrapper {
+    height: 250px;
+  }
+  
+  .mostrar-grafico {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .acoes-container {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+  
+    .header .title {
+      font-size: 1.5rem;
+    }
+  
+    .header-buttons, .control-buttons {
+      flex-wrap: wrap;
+    }
+  
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .header .title {
+      font-size: 1.3rem;
+    }
+  
+    .grafico-wrapper {
+      height: 200px;
+    }
+  
+    .ant-modal {
+      max-width: 95vw;
+    }
+  }
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.titulo-estoque {
+  font-size: 1.8rem;
+  color: #0d47a1;
+  margin: 0;
+}
+
+.search-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.botoes-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.grafico-container {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.grafico-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.grafico-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.grafico-wrapper {
+  height: 250px;
+}
+
+.mostrar-grafico {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .titulo-estoque {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .search-container {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .botoes-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .grafico-wrapper {
+    height: 200px;
+  }
+  
+  /* Ajuste para tabelas */
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .ant-table-tbody tr td {
+    white-space: nowrap;
+    padding: 8px;
+  }
+  
+  /* Ajustes para modais */
+  .ant-modal-body {
+    padding: 16px 12px;
+  }
+  
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .titulo-estoque {
+    font-size: 1.3rem;
+  }
+  
+  .header-container, 
+  .search-container,
+  .botoes-container {
+    gap: 8px;
+  }
+  
+  .grafico-wrapper {
+    height: 180px;
+  }
+  
+  .grafico-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  /* Ajustes para botões em telas muito pequenas */
+  .ant-btn {
+    padding: 0 8px;
+  }
+  
+  /* Botões do footer para modais */
+  .ant-modal-footer .ant-btn {
+    margin-left: 8px;
+  }
+}

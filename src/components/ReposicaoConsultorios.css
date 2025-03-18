@@ -1,0 +1,68 @@
+.estoque-container {
+  background: #f8faff;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.header-fixo {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid #e3f2fd;
+  box-shadow: 0 4px 12px rgba(13,71,161,0.08);
+}
+
+.header .title {
+  font-size: 1.8rem;
+  color: #0d47a1;
+  font-weight: 700;
+}
+
+.header-buttons button,
+.control-buttons button {
+  background: #0d47a1;
+  color: white;
+  border-radius: 10px;
+  padding: 0.8rem 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.header-buttons button:hover {
+  background: #1565c0;
+  transform: translateY(-2px);
+}
+
+.grafico-container {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.grafico-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.grafico-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.grafico-wrapper {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(13,71,161,0.1);
+  border: 1px solid #e8f0fe;
+  height: 250px;
+}
+
+.mostrar-grafico {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}

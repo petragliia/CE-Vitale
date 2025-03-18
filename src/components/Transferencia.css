@@ -1,0 +1,142 @@
+.transferencia-container {
+    width: 95%;
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f7f7f7;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .transferencia-container h1 {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #1a3e5a;
+  }
+  
+  .header-buttons {
+    display: flex;
+    margin-bottom: 20px;
+    gap: 10px;
+  }
+  
+  .transferencia-container .ant-form-item {
+    margin-bottom: 16px;
+  }
+  
+  .transferencia-container .ant-select {
+    width: 100%;
+  }
+  
+  .transferencia-container small {
+    color: #5c6b7a;
+    font-style: italic;
+  }
+  
+  .transferencia-container .ant-select-item {
+    padding: 8px 12px;
+  }
+  
+  .transferencia-container .ant-select-item-option-content {
+    white-space: normal;
+    word-break: break-word;
+  }
+  
+  .transferencia-container .ant-select-item-option-content strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #1a3e5a;
+  }
+  
+  .transferencia-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .transferencia-container .ant-select-selection-item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Estilos para o box de detalhes do item */
+  .item-details-box {
+    background-color: #f5f8ff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #e1e8f5;
+  }
+  
+  .item-details-box h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #1a3e5a;
+  }
+  
+  .item-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .item-details p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 480px) {
+    .transferencia-container {
+      width: 100%;
+      padding: 15px;
+      margin: 10px auto;
+      border-radius: 8px;
+    }
+  
+    .transferencia-container h1 {
+      font-size: 1.3rem;
+    }
+  
+    .header-buttons {
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .item-details {
+      grid-template-columns: 1fr;
+    }
+    
+    .item-details-box {
+      padding: 10px;
+    }
+    
+    /* Melhorar a visualização do dropdown em telas pequenas */
+    .transferencia-container .ant-select-dropdown {
+      max-width: 95vw;
+    }
+    
+    .transferencia-container .ant-select-item {
+      padding: 10px 8px;
+    }
+    
+    /* Botões mais fáceis de tocar */
+    .transferencia-container .ant-btn {
+      height: 40px;
+      font-size: 1rem;
+    }
+  }
+  
+  /* Tablets */
+  @media (min-width: 481px) and (max-width: 768px) {
+    .transferencia-container {
+      width: 90%;
+      max-width: 600px;
+    }
+    
+    .item-details {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
