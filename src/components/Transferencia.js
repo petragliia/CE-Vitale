@@ -87,7 +87,8 @@ function Transferencia({ sourceStock, onBack }) {
           moment(data.validade?.toDate()).isSame(selectedItem.validade, 'day') &&
           data.tipoQuantidade === selectedItem.tipoQuantidade &&
           data.categoria === selectedItem.categoria &&
-          Number(data.valor) === Number(selectedItem.valor)
+          Number(data.valor) === Number(selectedItem.valor) &&
+          data.fornecedor === selectedItem.fornecedor
         );
       });
 
@@ -245,6 +246,8 @@ function Transferencia({ sourceStock, onBack }) {
                       <span> | Preço: R$ {Number(item.valor).toFixed(2)}</span>
                       <br />
                       <span>Validade: {item.validade ? moment(item.validade).format('DD/MM/YYYY') : 'Sem validade'}</span>
+                      <br />
+                      <span>Fornecedor: {item.fornecedor || 'Não especificado'}</span>
                     </div>
                   </div>
                 </Select.Option>

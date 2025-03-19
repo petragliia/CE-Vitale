@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Table, Button, Tabs, AutoComplete, Form, notification, Modal, Input, DatePicker, Select, Dropdown } from "antd";
-import { EditOutlined, DeleteOutlined, LogoutOutlined, BellOutlined, PlusOutlined, EyeOutlined, EyeInvisibleOutlined, SwapOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, LogoutOutlined, BellOutlined, PlusOutlined, EyeOutlined, EyeInvisibleOutlined, SwapOutlined, FilterOutlined, AppstoreAddOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebaseConfig";
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, getDoc } from "firebase/firestore";
@@ -28,6 +28,24 @@ function ReposicaoConsultorios() {
   const [form] = Form.useForm();
   const [atualizarTabs, setAtualizarTabs] = useState(0);
   const [showTransfer, setShowTransfer] = useState(false);
+  const [modalLevaVisible, setModalLevaVisible] = useState(false);
+  const [formLeva] = Form.useForm();
+  const [produtosSelecionaveis, setProdutosSelecionaveis] = useState([]);
+  const [produtoSelecionadoLeva, setProdutoSelecionadoLeva] = useState(null);
+
+  // Estados para filtros avançados
+  const [filtroAvancado, setFiltroAvancado] = useState(false);
+  const [filtros, setFiltros] = useState({
+    nome: "",
+    fornecedor: "",
+    precoMin: "",
+    precoMax: "",
+    quantidadeMin: "",
+    quantidadeMax: "",
+    validadeOrdem: null,
+    validadeInicio: null,
+    validadeFim: null
+  });
 
   // Coleção referente ao estoque de Reposição de Consultorios
   const collectionName = stocks.reposicao;
@@ -41,6 +59,82 @@ function ReposicaoConsultorios() {
   const handleBusca = (valor) => {
     setBusca(valor);
     setSugestoes(valor ? produtos.filter(p => p.nome.toLowerCase().includes(valor.toLowerCase())) : []);
+  };
+
+  const aplicarFiltros = () => {
+    // Filtra os produtos com base nos múltiplos critérios
+    const produtosFiltrados = produtos.filter(produto => {
+      // Filtro por nome
+      if (filtros.nome && !produto.nome.toLowerCase().includes(filtros.nome.toLowerCase())) {
+        return false;
+      }
+      
+      // Filtro por fornecedor
+      if (filtros.fornecedor && (!produto.fornecedor || !produto.fornecedor.toLowerCase().includes(filtros.fornecedor.toLowerCase()))) {
+        return false;
+      }
+      
+      // Filtro por preço mínimo
+      if (filtros.precoMin !== "" && Number(produto.valor) < Number(filtros.precoMin)) {
+        return false;
+      }
+      
+      // Filtro por preço máximo
+      if (filtros.precoMax !== "" && Number(produto.valor) > Number(filtros.precoMax)) {
+        return false;
+      }
+      
+      // Filtro por quantidade mínima
+      if (filtros.quantidadeMin !== "" && Number(produto.quantidade) < Number(filtros.quantidadeMin)) {
+        return false;
+      }
+      
+      // Filtro por quantidade máxima
+      if (filtros.quantidadeMax !== "" && Number(produto.quantidade) > Number(filtros.quantidadeMax)) {
+        return false;
+      }
+      
+      // Filtro por período de validade
+      if (filtros.validadeInicio && produto.validade && moment(produto.validade).isBefore(filtros.validadeInicio, 'day')) {
+        return false;
+      }
+      
+      if (filtros.validadeFim && produto.validade && moment(produto.validade).isAfter(filtros.validadeFim, 'day')) {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Ordenação por validade
+    if (filtros.validadeOrdem) {
+      produtosFiltrados.sort((a, b) => {
+        if (!a.validade) return 1;
+        if (!b.validade) return -1;
+        
+        if (filtros.validadeOrdem === 'asc') {
+          return moment(a.validade).diff(moment(b.validade));
+        } else {
+          return moment(b.validade).diff(moment(a.validade));
+        }
+      });
+    }
+    
+    return produtosFiltrados;
+  };
+
+  const limparFiltros = () => {
+    setFiltros({
+      nome: "",
+      fornecedor: "",
+      precoMin: "",
+      precoMax: "",
+      quantidadeMin: "",
+      quantidadeMax: "",
+      validadeOrdem: null,
+      validadeInicio: null,
+      validadeFim: null
+    });
   };
 
   const verificarNotificacoes = (produtos) => {
@@ -213,11 +307,91 @@ function ReposicaoConsultorios() {
     };
   }, [produtos, CORES_POR_CATEGORIA]);
 
+  const abrirModalAdicionarLeva = () => {
+    // Preparar a lista de produtos existentes para seleção
+    const produtosUnicos = Array.from(new Map(produtos.map(p => [p.nome, p])).values());
+    setProdutosSelecionaveis(produtosUnicos.map(p => ({
+      label: `${p.nome} (${p.categoria})`,
+      value: p.id,
+      produto: p
+    })));
+    setModalLevaVisible(true);
+  };
+
+  const handleSelecionarProdutoLeva = (produtoId) => {
+    const produtoSelecionado = produtosSelecionaveis.find(p => p.value === produtoId);
+    if (produtoSelecionado) {
+      setProdutoSelecionadoLeva(produtoSelecionado.produto);
+      // Preencher alguns campos do formulário com dados do produto
+      formLeva.setFieldsValue({
+        nome: produtoSelecionado.produto.nome,
+        categoria: produtoSelecionado.produto.categoria,
+        tipoQuantidade: produtoSelecionado.produto.tipoQuantidade,
+        fornecedor: produtoSelecionado.produto.fornecedor,
+        valor: produtoSelecionado.produto.valor
+      });
+    }
+  };
+
+  const salvarNovaLeva = async (values) => {
+    try {
+      if (!produtoSelecionadoLeva) {
+        notification.error({ message: "Selecione um produto para adicionar leva" });
+        return;
+      }
+
+      const dados = {
+        nome: produtoSelecionadoLeva.nome,
+        categoria: produtoSelecionadoLeva.categoria,
+        tipoQuantidade: produtoSelecionadoLeva.tipoQuantidade,
+        fornecedor: values.fornecedor,
+        valor: Number(values.valor),
+        quantidade: Number(values.quantidade),
+        validade: values.validade?.toDate(),
+        userId: currentUser.uid,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const docRef = await addDoc(collection(db, collectionName), dados);
+      
+      // Registrar a operação de adição de leva
+      await registrarOperacao(
+        currentUser.email,
+        'adicao_leva',
+        dados.nome,
+        'Reposição de Consultórios',
+        null,
+        dados.quantidade,
+        { valorUnitario: dados.valor, id: docRef.id }
+      );
+      
+      notification.success({ message: "Nova leva adicionada com sucesso!" });
+      await carregarProdutos();
+      setModalLevaVisible(false);
+      formLeva.resetFields();
+      setProdutoSelecionadoLeva(null);
+    } catch (error) {
+      notification.error({ message: "Erro ao adicionar leva", description: error.message });
+    }
+  };
+
   const tabsItems = [
     ...Object.keys(CORES_POR_CATEGORIA).map(categoria => {
-      const produtosFiltrados = produtos.filter(p =>
-        p.categoria === categoria && p.nome.toLowerCase().includes(busca.toLowerCase())
-      );
+      // Aplicar os filtros aos produtos da categoria
+      let produtosFiltrados = produtos.filter(p => p.categoria === categoria);
+      
+      // Se a busca simples estiver ativa
+      if (busca && !filtroAvancado) {
+        produtosFiltrados = produtosFiltrados.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()));
+      }
+      
+      // Se o filtro avançado estiver ativo
+      if (filtroAvancado) {
+        const todosFiltrados = aplicarFiltros();
+        produtosFiltrados = todosFiltrados.filter(p => p.categoria === categoria);
+      }
+      
       return {
         key: categoria,
         label: `${categoria} (${produtosFiltrados.length})`,
@@ -227,6 +401,7 @@ function ReposicaoConsultorios() {
             columns={[
               { title: "Nome", dataIndex: "nome" },
               { title: "Quantidade", dataIndex: "quantidade" },
+              { title: "Fornecedor", dataIndex: "fornecedor" },
               { title: "Preço (R$)", dataIndex: "valor", render: val => `R$ ${Number(val).toFixed(2)}` },
               { title: "Validade", dataIndex: "validade", render: val => (val ? moment(val).format("DD/MM/YYYY") : "-") },
               {
@@ -247,30 +422,43 @@ function ReposicaoConsultorios() {
     }),
     {
       key: "itens-produtos",
-      label: `Itens/Produtos (${produtos.length})`,
+      label: `Itens/Produtos (${filtroAvancado ? aplicarFiltros().length : (busca ? produtos.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase())).length : produtos.length)})`,
       children: (
-        <Table
-          dataSource={produtos}
-          columns={[
-            { title: "Nome", dataIndex: "nome" },
-            { title: "Categoria", dataIndex: "categoria" },
-            { title: "Tipo", dataIndex: "tipoQuantidade" },
-            { title: "Quantidade", dataIndex: "quantidade" },
-            { title: "Preço (R$)", dataIndex: "valor", render: val => `R$ ${Number(val).toFixed(2)}` },
-            { title: "Validade", dataIndex: "validade", render: val => (val ? moment(val).format("DD/MM/YYYY") : "-") },
-            {
-              title: "Ações",
-              render: (_, record) => (
-                <div className="acoes-container">
-                  <Button icon={<EditOutlined />} onClick={() => editarProduto(record)} />
-                  <Button icon={<DeleteOutlined />} onClick={() => removerProduto(record.id)} danger />
-                </div>
-              )
-            }
-          ]}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-        />
+        <>
+          <div className="acoes-tabela-container">
+            <Button 
+              type="primary" 
+              icon={<AppstoreAddOutlined />} 
+              onClick={abrirModalAdicionarLeva}
+              style={{ marginBottom: 16 }}
+            >
+              Adicionar Leva
+            </Button>
+          </div>
+          <Table
+            dataSource={filtroAvancado ? aplicarFiltros() : (busca ? produtos.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase())) : produtos)}
+            columns={[
+              { title: "Nome", dataIndex: "nome" },
+              { title: "Categoria", dataIndex: "categoria" },
+              { title: "Tipo", dataIndex: "tipoQuantidade" },
+              { title: "Quantidade", dataIndex: "quantidade" },
+              { title: "Fornecedor", dataIndex: "fornecedor" },
+              { title: "Preço (R$)", dataIndex: "valor", render: val => `R$ ${Number(val).toFixed(2)}` },
+              { title: "Validade", dataIndex: "validade", render: val => (val ? moment(val).format("DD/MM/YYYY") : "-") },
+              {
+                title: "Ações",
+                render: (_, record) => (
+                  <div className="acoes-container">
+                    <Button icon={<EditOutlined />} onClick={() => editarProduto(record)} />
+                    <Button icon={<DeleteOutlined />} onClick={() => removerProduto(record.id)} danger />
+                  </div>
+                )
+              }
+            ]}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+          />
+        </>
       )
     }
   ];
@@ -340,27 +528,147 @@ function ReposicaoConsultorios() {
       ) : (
         <>
           <div className="controls-container">
-            <div className="search-bar-container">
-              <AutoComplete
-                options={sugestoes.map(p => ({
-                  value: p.nome,
-                  label: (
-                    <div className="opcao-busca">
-                      <span>{p.nome}</span>
-                      <small>Categoria: {p.categoria}</small>
-                      <small>Estoque: {p.quantidade}</small>
+            <div className="filter-container">
+              {filtroAvancado ? (
+                <div className="filtros-avancados">
+                  <Form layout="vertical">
+                    <div className="form-grid">
+                      <Form.Item label="Nome do Produto">
+                        <Input
+                          placeholder="Buscar por nome"
+                          value={filtros.nome}
+                          onChange={(e) => setFiltros({...filtros, nome: e.target.value})}
+                        />
+                      </Form.Item>
+                      
+                      <Form.Item label="Fornecedor">
+                        <Input
+                          placeholder="Buscar por fornecedor"
+                          value={filtros.fornecedor}
+                          onChange={(e) => setFiltros({...filtros, fornecedor: e.target.value})}
+                        />
+                      </Form.Item>
+                      
+                      <Form.Item label="Preço Mínimo (R$)">
+                        <Input
+                          type="number"
+                          placeholder="Preço mínimo"
+                          value={filtros.precoMin}
+                          onChange={(e) => setFiltros({...filtros, precoMin: e.target.value})}
+                        />
+                      </Form.Item>
+                      
+                      <Form.Item label="Preço Máximo (R$)">
+                        <Input
+                          type="number"
+                          placeholder="Preço máximo"
+                          value={filtros.precoMax}
+                          onChange={(e) => setFiltros({...filtros, precoMax: e.target.value})}
+                        />
+                      </Form.Item>
+                      
+                      <Form.Item label="Quantidade Mínima">
+                        <Input
+                          type="number"
+                          placeholder="Quantidade mínima"
+                          value={filtros.quantidadeMin}
+                          onChange={(e) => setFiltros({...filtros, quantidadeMin: e.target.value})}
+                        />
+                      </Form.Item>
+                      
+                      <Form.Item label="Quantidade Máxima">
+                        <Input
+                          type="number"
+                          placeholder="Quantidade máxima"
+                          value={filtros.quantidadeMax}
+                          onChange={(e) => setFiltros({...filtros, quantidadeMax: e.target.value})}
+                        />
+                      </Form.Item>
+                      
+                      <Form.Item label="Ordenar por Validade">
+                        <Select
+                          placeholder="Selecione a ordem"
+                          value={filtros.validadeOrdem}
+                          onChange={(value) => setFiltros({...filtros, validadeOrdem: value})}
+                          allowClear
+                        >
+                          <Select.Option value="asc">Do mais antigo ao mais recente</Select.Option>
+                          <Select.Option value="desc">Do mais recente ao mais antigo</Select.Option>
+                        </Select>
+                      </Form.Item>
+                      
+                      <Form.Item label="Período de Validade">
+                        <DatePicker.RangePicker
+                          format="DD/MM/YYYY"
+                          placeholder={["Data inicial", "Data final"]}
+                          value={[filtros.validadeInicio, filtros.validadeFim]}
+                          onChange={(dates) => {
+                            setFiltros({
+                              ...filtros, 
+                              validadeInicio: dates ? dates[0] : null,
+                              validadeFim: dates ? dates[1] : null
+                            });
+                          }}
+                          style={{ width: "100%" }}
+                          inputReadOnly={true}
+                          className="date-picker-mobile"
+                          popupClassName="date-picker-popup-mobile"
+                        />
+                      </Form.Item>
                     </div>
-                  )
-                }))}
-                value={busca}
-                onChange={handleBusca}
-                placeholder="Buscar produto..."
-                className="search-bar"
-                popupClassName="dropdown-busca"
-              >
-                <Input.Search allowClear enterButton />
-              </AutoComplete>
+                    
+                    <div className="filtro-buttons">
+                      <Button type="primary" onClick={() => setAtualizarTabs(prev => prev + 1)}>
+                        Aplicar Filtros
+                      </Button>
+                      <Button onClick={limparFiltros} style={{ marginLeft: 10 }}>
+                        Limpar Filtros
+                      </Button>
+                      <Button 
+                        onClick={() => setFiltroAvancado(false)} 
+                        style={{ marginLeft: 10 }}
+                        icon={<EyeInvisibleOutlined />}
+                      >
+                        Ocultar Filtros
+                      </Button>
+                    </div>
+                  </Form>
+                </div>
+              ) : (
+                <div className="search-bar-container">
+                  <div className="search-with-filter">
+                    <AutoComplete
+                      options={sugestoes.map(p => ({
+                        value: p.nome,
+                        label: (
+                          <div className="opcao-busca">
+                            <span>{p.nome}</span>
+                            <small>Categoria: {p.categoria}</small>
+                            <small>Estoque: {p.quantidade}</small>
+                          </div>
+                        )
+                      }))}
+                      value={busca}
+                      onChange={handleBusca}
+                      placeholder="Buscar produto..."
+                      className="search-bar"
+                      popupClassName="dropdown-busca"
+                    >
+                      <Input.Search allowClear enterButton />
+                    </AutoComplete>
+                    <Button 
+                      icon={<FilterOutlined />}
+                      onClick={() => setFiltroAvancado(true)}
+                      className="filter-button"
+                      title="Mostrar Filtros Avançados"
+                    >
+                      Filtros
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
+            
             <div className="grafico-toggle-container">
               <Button type="primary" onClick={() => setExibirGrafico(!exibirGrafico)} icon={exibirGrafico ? <EyeInvisibleOutlined /> : <EyeOutlined />}>
                 {exibirGrafico ? "Esconder Gráfico" : "Mostrar Gráfico"}
@@ -435,6 +743,72 @@ function ReposicaoConsultorios() {
                     className="date-picker-mobile"
                     popupClassName="date-picker-popup-mobile"
                   />
+                </Form.Item>
+                <Form.Item name="fornecedor" label="Fornecedor" rules={[{ required: true, message: "Informe o fornecedor!" }]}>
+                  <Input placeholder="Ex: Distribuidora Médica ABC" />
+                </Form.Item>
+              </div>
+            </Form>
+          </Modal>
+          <Modal
+            title="Adicionar Nova Leva"
+            open={modalLevaVisible}
+            onCancel={() => {
+              setModalLevaVisible(false);
+              setProdutoSelecionadoLeva(null);
+              formLeva.resetFields();
+            }}
+            onOk={() => formLeva.submit()}
+            width={600}
+          >
+            <Form form={formLeva} onFinish={salvarNovaLeva} layout="vertical">
+              <Form.Item 
+                name="produtoId" 
+                label="Selecione o Produto" 
+                rules={[{ required: true, message: "Selecione um produto!" }]}
+              >
+                <Select 
+                  placeholder="Selecione um produto existente" 
+                  options={produtosSelecionaveis}
+                  onChange={handleSelecionarProdutoLeva}
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                />
+              </Form.Item>
+              
+              {produtoSelecionadoLeva && (
+                <div className="info-produto-selecionado">
+                  <p><strong>Produto:</strong> {produtoSelecionadoLeva.nome}</p>
+                  <p><strong>Categoria:</strong> {produtoSelecionadoLeva.categoria}</p>
+                  <p><strong>Tipo:</strong> {produtoSelecionadoLeva.tipoQuantidade}</p>
+                </div>
+              )}
+              
+              <div className="form-grid">
+                <Form.Item name="quantidade" label="Quantidade da Nova Leva" rules={[{ required: true, message: "Informe a quantidade!" }]}>
+                  <Input type="number" min={1} placeholder="Ex: 100" />
+                </Form.Item>
+                
+                <Form.Item name="valor" label="Preço Unitário (R$)" rules={[{ required: true, message: "Informe o preço!" }]}>
+                  <Input type="number" min={0} step={0.01} placeholder="Ex: 12.50" />
+                </Form.Item>
+                
+                <Form.Item name="validade" label="Data de Validade" rules={[{ required: true, message: "Selecione uma data!" }]}>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    disabledDate={current => current && current < moment().startOf("day")}
+                    style={{ width: "100%" }}
+                    placeholder="Selecione a data"
+                    inputReadOnly={true}
+                    className="date-picker-mobile"
+                    popupClassName="date-picker-popup-mobile"
+                  />
+                </Form.Item>
+                
+                <Form.Item name="fornecedor" label="Fornecedor" rules={[{ required: true, message: "Informe o fornecedor!" }]}>
+                  <Input placeholder="Ex: Distribuidora Médica ABC" />
                 </Form.Item>
               </div>
             </Form>

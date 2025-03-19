@@ -4,6 +4,7 @@ import EstoquePrincipal from "./components/EstoquePrincipal";
 import EstoqueVet from "./components/EstoqueVet";
 import Internacao from "./components/Internacao";
 import ReposicaoConsultorios from "./components/ReposicaoConsultorios";
+import ImportacaoCSV from "./components/ImportacaoCSV";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Transferencia from "./components/Transferencia";
@@ -74,6 +75,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Registro />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/importacao-csv"
+            element={
+              <PrivateRoute>
+                <ImportacaoCSV />
               </PrivateRoute>
             }
           />

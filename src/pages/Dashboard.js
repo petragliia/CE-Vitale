@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Row, Col, List, Typography, Spin, Space, Tooltip, Modal, Divider } from "antd";
+import { Button, Card, Row, Col, List, Typography, Spin, Space, Tooltip, Modal, Divider, notification, Dropdown, Menu } from "antd";
 import { useAuth } from "../context/AuthContext";
 import { 
   HistoryOutlined, 
@@ -8,7 +8,12 @@ import {
   ArrowRightOutlined, 
   ClearOutlined,
   FileTextOutlined,
-  PrinterOutlined
+  PrinterOutlined,
+  ClockCircleOutlined,
+  CalendarOutlined,
+  LogoutOutlined,
+  ImportOutlined,
+  SettingOutlined
 } from "@ant-design/icons";
 import { obterRegistros, formatarMensagem } from "../services/registroService";
 import { gerarRelatorioGeral } from "../services/relatorioService";
@@ -23,11 +28,41 @@ function Dashboard() {
   const [carregandoRegistros, setCarregandoRegistros] = useState(true);
   const [relatorioVisivel, setRelatorioVisivel] = useState(false);
   const [dadosRelatorio, setDadosRelatorio] = useState(null);
-  const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
+  const [dataHoraAtual, setDataHoraAtual] = useState(new Date());
 
   useEffect(() => {
     carregarRegistrosRecentes();
+    
+    // Atualizar a data e hora a cada segundo
+    const intervalo = setInterval(() => {
+      setDataHoraAtual(new Date());
+    }, 1000);
+    
+    // Limpar o intervalo quando o componente for desmontado
+    return () => clearInterval(intervalo);
   }, []);
+  
+  // Formatar a data atual em português do Brasil
+  const formatarData = (data) => {
+    const opcoes = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    return data.toLocaleDateString('pt-BR', opcoes);
+  };
+  
+  // Formatar a hora atual
+  const formatarHora = (data) => {
+    const opcoes = { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit', 
+      hour12: false 
+    };
+    return data.toLocaleTimeString('pt-BR', opcoes);
+  };
 
   const carregarRegistrosRecentes = async () => {
     setCarregandoRegistros(true);
@@ -60,17 +95,23 @@ function Dashboard() {
   };
 
   const gerarRelatorio = async () => {
-    setGerandoRelatorio(true);
+    setRelatorioVisivel(true);
     try {
       // Usar o serviço de relatório para obter dados reais
       const relatorio = await gerarRelatorioGeral();
       setDadosRelatorio(relatorio);
-      setRelatorioVisivel(true);
     } catch (error) {
       console.error("Erro ao gerar relatório:", error);
-    } finally {
-      setGerandoRelatorio(false);
+      notification.error({
+        message: "Erro ao gerar relatório",
+        description: "Não foi possível gerar o relatório. Tente novamente mais tarde."
+      });
     }
+  };
+
+  const fecharRelatorio = () => {
+    console.log("Fechando relatório");
+    setRelatorioVisivel(false);
   };
 
   const imprimirRelatorio = () => {
@@ -88,20 +129,67 @@ function Dashboard() {
     
     // Restauramos o conteúdo original
     document.body.innerHTML = conteudoOriginal;
+    
+    // Re-renderizamos o componente para restaurar os eventos
+    setTimeout(() => {
+      setRelatorioVisivel(true);
+    }, 100);
   };
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Vitale Controle de Estoque</h1>
+        <div className="header-left">
+          <h1>Vitale Controle de Estoque</h1>
+          <div className="data-hora-container">
+            <div className="data-container">
+              <CalendarOutlined />
+              <span>{formatarData(dataHoraAtual)}</span>
+            </div>
+            <div className="hora-container">
+              <ClockCircleOutlined />
+              <span>{formatarHora(dataHoraAtual)}</span>
+            </div>
+          </div>
+        </div>
         <div className="user-info">
           <span>Olá, {currentUser?.email}</span>
-          <Button onClick={handleLogout}>Sair</Button>
+          <Space>
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item 
+                    key="relatorio" 
+                    icon={<FileTextOutlined />}
+                    onClick={gerarRelatorio}
+                  >
+                    Gerar Relatório
+                  </Menu.Item>
+                  <Menu.Item 
+                    key="importacao" 
+                    icon={<ImportOutlined />}
+                    onClick={() => navigate("/importacao-csv")}
+                  >
+                    Importar Dados (CSV)
+                  </Menu.Item>
+                </Menu>
+              }
+              placement="bottomRight"
+              trigger={["click"]}
+            >
+              <Button 
+                icon={<SettingOutlined />} 
+                className="btn-padrao btn-settings"
+                type="default"
+              />
+            </Dropdown>
+            <Button icon={<LogoutOutlined />} className="btn-padrao" onClick={handleLogout}>Sair</Button>
+          </Space>
         </div>
       </div>
 
       <div className="dashboard-content">
-        <Row gutter={[24, 24]}>
+        <Row gutter={[32, 24]} justify="center">
           <Col xs={24} sm={12} lg={6}>
             <h3 className="dashboard-section-title">Estoque Principal</h3>
             <Card 
@@ -155,22 +243,8 @@ function Dashboard() {
           </Col>
         </Row>
 
-        {/* Botão para gerar relatório */}
-        <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
-          <Col xs={24}>
-            <h3 className="dashboard-section-title">Relatórios</h3>
-            <Card className="dashboard-card" hoverable onClick={gerarRelatorio}>
-              <div className="dashboard-card-content" style={{ textAlign: 'center' }}>
-                <FileTextOutlined style={{ fontSize: '32px', color: '#1a3e5a', marginBottom: '10px' }} />
-                <p>Gerar Relatório Geral</p>
-                {gerandoRelatorio && <Spin style={{ marginTop: '10px' }} />}
-              </div>
-            </Card>
-          </Col>
-        </Row>
-
         {/* Nova seção de registros integrada ao Dashboard */}
-        <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
+        <Row gutter={[32, 24]} style={{ marginTop: '32px' }} justify="center">
           <Col xs={24}>
             <h3 className="dashboard-section-title">
               Registros Recentes
@@ -181,6 +255,7 @@ function Dashboard() {
                     icon={<ReloadOutlined />} 
                     onClick={carregarRegistrosRecentes} 
                     loading={carregandoRegistros}
+                    className="btn-icone"
                   />
                 </Tooltip>
                 <Tooltip title="Limpar registros">
@@ -189,6 +264,7 @@ function Dashboard() {
                     icon={<ClearOutlined />} 
                     onClick={limparRegistrosVisuais} 
                     disabled={registrosRecentes.length === 0}
+                    className="btn-icone"
                   />
                 </Tooltip>
               </Space>
@@ -203,6 +279,7 @@ function Dashboard() {
                   type="primary" 
                   onClick={() => navigate("/registros")}
                   icon={<ArrowRightOutlined />}
+                  className="btn-padrao"
                 >
                   Ver Todos
                 </Button>
@@ -220,6 +297,7 @@ function Dashboard() {
                     type="link" 
                     onClick={carregarRegistrosRecentes}
                     icon={<ReloadOutlined />}
+                    className="btn-link"
                   >
                     Recarregar
                   </Button>
@@ -248,28 +326,34 @@ function Dashboard() {
 
       {/* Modal de Relatório */}
       <Modal
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FileTextOutlined />
-            <span>Relatório Geral</span>
+        title="Relatório Geral de Estoque"
+        open={relatorioVisivel}
+        onCancel={fecharRelatorio}
+        width={1000}
+        maskClosable={true}
+        destroyOnClose={true}
+        closable={true}
+        centered={true}
+        footer={
+          <div className="relatorio-footer">
+            <Button 
+              key="fechar" 
+              onClick={fecharRelatorio} 
+              className="btn-padrao btn-relatorio"
+            >
+              Fechar
+            </Button>
+            <Button 
+              key="imprimir" 
+              type="primary" 
+              icon={<PrinterOutlined />} 
+              onClick={imprimirRelatorio}
+              className="btn-padrao btn-relatorio"
+            >
+              Imprimir
+            </Button>
           </div>
         }
-        open={relatorioVisivel}
-        onCancel={() => setRelatorioVisivel(false)}
-        width={800}
-        footer={[
-          <Button key="back" onClick={() => setRelatorioVisivel(false)}>
-            Fechar
-          </Button>,
-          <Button 
-            key="print" 
-            type="primary" 
-            icon={<PrinterOutlined />} 
-            onClick={imprimirRelatorio}
-          >
-            Imprimir
-          </Button>,
-        ]}
       >
         <div id="relatorio-para-impressao" className="relatorio-conteudo">
           <div className="relatorio-cabecalho">

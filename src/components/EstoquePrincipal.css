@@ -1,207 +1,268 @@
-.estoque-container {
-    background: #fff;
-    padding: 20px;
-    min-height: 100vh;
-    max-width: var(--container-max-width);
-    margin: 0 auto;
-  }
-  
-  .header-fixo {
-    background: #f0f0f0;
-    padding: 15px 20px;
-    border-bottom: 2px solid #001f3f;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .header .title {
-    font-size: 1.8rem;
-    font-weight: 500;
-  }
-  
-  .header-buttons, .control-buttons {
-    display: flex;
-    gap: 10px;
-    margin: 10px 0;
-  }
-  
-  .search-bar-container {
-    margin: 20px 0;
-  }
-  
-  .grafico-toggle-container {
-    margin: 20px 0;
-  }
-  
-  .grafico-container {
-    margin-top: 20px;
-    padding: 15px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .grafico-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  
-  .grafico-header h3 {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
-  }
-  
-  .grafico-wrapper {
-    height: 250px;
-  }
-  
-  .mostrar-grafico {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-  
-  .acoes-container {
-    display: flex;
-    gap: 8px;
-  }
-  
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-  
-  @media (max-width: 768px) {
-    .header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 15px;
-    }
-  
-    .header .title {
-      font-size: 1.5rem;
-    }
-  
-    .header-buttons, .control-buttons {
-      flex-wrap: wrap;
-    }
-  
-    .form-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .header .title {
-      font-size: 1.3rem;
-    }
-  
-    .grafico-wrapper {
-      height: 200px;
-    }
-  
-    .ant-modal {
-      max-width: 95vw;
-    }
-  }
+:root {
+  --primary-blue: #0d47a1;
+  --secondary-blue: #1976d2;
+  --light-blue: #e3f2fd;
+  --background-gradient: linear-gradient(145deg, #f8fbff 0%, #eef4ff 100%);
+  --card-shadow: 0 8px 24px rgba(13, 71, 161, 0.1);
+}
 
+/* Container principal harmonizado com o Dashboard */
+.estoque-container {
+  background: #fff;
+  padding: 2rem 5%;
+  min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Cabeçalho centralizado e harmonizado */
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 20px;
   width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .titulo-estoque {
   font-size: 1.8rem;
-  color: #0d47a1;
+  color: var(--primary-blue);
   margin: 0;
-  font-weight: 500;
-  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  text-align: center;
 }
 
+/* Container de busca centralizado */
 .search-container {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   flex-wrap: wrap;
-  margin-top: 10px;
-  margin-bottom: 15px;
+  margin: 20px auto;
   width: 100%;
+  max-width: 1200px;
   align-items: center;
+  justify-content: center;
 }
 
+/* Container de filtros avançados */
+.filter-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 20px;
+}
+
+.filtros-avancados {
+  background: #f9fafc;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(13, 71, 161, 0.08);
+  margin-bottom: 24px;
+  border: 2px solid rgba(13, 71, 161, 0.15);
+}
+
+.filtros-avancados .form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.filtro-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Container de botões alinhados */
 .botoes-container {
   display: flex;
-  gap: 12px;
+  gap: 15px;
   flex-wrap: wrap;
-  margin: 20px 0;
+  margin: 20px auto;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+}
+
+/* Search bar com filtro */
+.search-with-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 16px;
+}
+
+.search-with-filter .search-bar {
+  flex: 1;
+}
+
+.search-with-filter .filter-button {
+  background-color: #f0f0f0;
+  color: var(--primary-blue);
+  border-color: #d9d9d9;
+  display: flex;
   align-items: center;
 }
 
+.search-with-filter .filter-button:hover {
+  background-color: #e6f7ff;
+  border-color: var(--primary-blue);
+}
+
+/* Gráfico centralizado e estilizado */
 .grafico-container {
-  margin-top: 20px;
-  padding: 15px;
+  margin: 30px auto;
+  padding: 24px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(13, 71, 161, 0.08);
+  max-width: 1200px;
+  border: 2px solid rgba(13, 71, 161, 0.15);
 }
 
 .grafico-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .grafico-header h3 {
   margin: 0;
-  font-size: 16px;
-  color: #333;
+  font-size: 18px;
+  color: var(--primary-blue);
+  font-weight: 600;
 }
 
 .grafico-wrapper {
-  height: 250px;
+  height: 300px;
 }
 
-.mostrar-grafico {
+.grafico-toggle-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin: 20px auto;
+  max-width: 1200px;
 }
 
-/* Estilos responsivos */
+/* Tabela estilizada */
+.ant-table-wrapper {
+  margin: 24px auto;
+  max-width: 1200px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(13, 71, 161, 0.08);
+}
+
+.ant-table-thead > tr > th {
+  background: #f0f5ff !important;
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+/* Formulários */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ant-form-item {
+  margin-bottom: 16px;
+}
+
+/* Container de ações */
+.acoes-container {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* Botões adicionados para "Adicionar Leva" */
+.acoes-tabela-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.info-produto-selecionado {
+  background-color: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--primary-blue);
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.info-produto-selecionado p {
+  margin-bottom: 8px;
+}
+
+.info-produto-selecionado p:last-child {
+  margin-bottom: 0;
+}
+
+/* Modais */
+.ant-modal-body {
+  padding: 24px;
+}
+
+.ant-modal-footer {
+  padding: 16px 24px;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+  .estoque-container {
+    padding: 1.5rem 4%;
+  }
+  
+  .filtros-avancados .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .estoque-container {
-    padding: 15px;
+    padding: 1.5rem 3%;
   }
   
   .header-container {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
   
   .titulo-estoque {
     font-size: 1.5rem;
     margin-bottom: 10px;
+    text-align: center;
   }
   
   .search-container {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
   }
   
@@ -210,20 +271,31 @@
   }
   
   .botoes-container {
+    justify-content: center;
     width: 100%;
-    justify-content: space-between;
+  }
+  
+  .filtros-avancados .form-grid {
+    grid-template-columns: 1fr;
   }
   
   .form-grid {
     grid-template-columns: 1fr;
   }
   
-  .ant-modal-body {
-    padding: 16px 12px;
+  .grafico-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
   }
 }
 
 @media (max-width: 576px) {
+  .estoque-container {
+    padding: 1rem 5%;
+  }
+  
   .titulo-estoque {
     font-size: 1.3rem;
   }
@@ -231,61 +303,38 @@
   .header-container, 
   .search-container,
   .botoes-container {
-    gap: 8px;
-  }
-  
-  .grafico-wrapper {
-    height: 180px;
-  }
-  
-  .grafico-header {
-    flex-direction: column;
-    align-items: flex-start;
     gap: 10px;
   }
   
-  /* Ajustes para botões em telas muito pequenas */
-  .ant-btn {
-    padding: 0 8px;
+  .grafico-wrapper {
+    height: 220px;
   }
   
-  /* Botões do footer para modais */
-  .ant-modal-footer .ant-btn {
-    margin-left: 8px;
+  .ant-btn {
+    padding: 0 12px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-}
-
-/* Alinhamento consistente para tabelas */
-.ant-table-wrapper {
-  margin-top: 20px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.ant-table-thead > tr > th {
-  background-color: #f0f5ff;
-  font-weight: 600;
-  color: #1a3e5a;
-}
-
-/* Espaçamento consistente para formulários */
-.ant-form-item {
-  margin-bottom: 16px;
-}
-
-/* Alinhamento para ações na tabela */
-.acoes-container {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-/* Consistência em espaçamentos para modais */
-.ant-modal-body {
-  padding: 20px;
-}
-
-.ant-modal-footer {
-  padding: 15px 20px;
+  
+  .filtro-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .filtro-buttons .ant-btn {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-top: 8px;
+  }
+  
+  .search-with-filter {
+    flex-direction: column;
+  }
+  
+  .search-with-filter .filter-button {
+    width: 100%;
+    margin-top: 8px;
+  }
 }

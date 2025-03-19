@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { db, auth } from './firebaseConfig';
+
+// Teste de conexão com o Firebase
+console.log("Firebase inicializado:", !!db, !!auth);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
