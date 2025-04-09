@@ -1,0 +1,54 @@
+.App {
+  text-align: center;
+  background: linear-gradient(145deg, #f8f9ff 0%, #e3e7ff 100%);
+  min-height: 100vh;
+  color: #0d47a1;
+  font-family: 'Segoe UI', system-ui;
+}
+
+.App-logo {
+  height: 35vmin;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(13,71,161,0.1));
+  transition: transform 0.3s ease;
+}
+
+.App-logo:hover {
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 25s linear;
+  }
+}
+
+.App-header {
+  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(12px + 2vmin);
+  color: white;
+  padding: 2rem;
+}
+
+.App-link {
+  color: #90caf9;
+  transition: color 0.3s ease;
+}
+
+.App-link:hover {
+  color: #e3f2fd;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

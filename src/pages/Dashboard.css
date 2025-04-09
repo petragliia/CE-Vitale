@@ -1,0 +1,815 @@
+:root {
+  --primary-blue: #0d47a1;
+  --secondary-blue: #1976d2;
+  --light-blue: #e3f2fd;
+  --background-gradient: linear-gradient(145deg, #f8fbff 0%, #eef4ff 100%);
+  --card-shadow: 0 8px 24px rgba(13, 71, 161, 0.1);
+}
+
+/* Estilos Gerais */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden; /* Adicionado para prevenir rolagem lateral */
+  background: var(--background-gradient);
+}
+
+/* Cabeçalho */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  background: var(--primary-blue);
+  box-shadow: 0 4px 20px rgba(13, 71, 161, 0.3);
+  position: relative;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Logo no cabeçalho */
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.logo-vitale {
+  height: 50px;
+  width: auto;
+  border-radius: 8px;
+  margin-right: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+/* Data e hora no cabeçalho */
+.data-hora-container {
+  display: flex;
+  margin-left: 30px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.data-hora-inner {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding: 8px 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.data-hora-inner span {
+  margin-left: 6px;
+  margin-right: 10px;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  font-weight: 500;
+}
+
+.data-hora-inner .anticon {
+  color: var(--primary-blue);
+}
+
+/* Informações do usuário */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: 30px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.user-info::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  height: 30px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.user-info span {
+  color: var(--light-blue);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Restante do código mantido igual */
+.dashboard-header::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to bottom, rgba(13,71,161,0.1), transparent);
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+/* Conteúdo Principal */
+.dashboard-content {
+  padding: 2rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cards */
+.ant-card.dashboard-card {
+  height: 200px;
+  min-height: 200px;
+  border: 2px solid rgba(13, 71, 161, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(13, 71, 161, 0.08);
+  margin: 15px auto;
+  width: 320px;
+  max-width: 320px;
+}
+
+.ant-card.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: 0.6s;
+}
+
+.ant-card.dashboard-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--card-shadow);
+}
+
+.ant-card.dashboard-card:hover::before {
+  left: 100%;
+}
+
+.dashboard-section-title {
+  color: var(--primary-blue);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-left: 0.5rem;
+  border-left: 4px solid var(--secondary-blue);
+  text-align: center;
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard-card-content {
+  transition: transform 0.3s ease;
+  padding: 1.5rem;
+}
+
+/* Rodapé Fixo */
+.dashboard-footer {
+  display: none;
+}
+
+.logout-btn {
+  display: none;
+}
+
+/* Animações */
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ant-row > .ant-col {
+  animation: cardEntrance 0.6s ease forwards;
+}
+
+.ant-col:nth-child(1) { animation-delay: 0.1s; }
+.ant-col:nth-child(2) { animation-delay: 0.2s; }
+.ant-col:nth-child(3) { animation-delay: 0.3s; }
+.ant-col:nth-child(4) { animation-delay: 0.4s; }
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .dashboard-content {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-content {
+    padding: 1.5rem 0.5rem;
+  }
+  
+  .ant-card.dashboard-card {
+    height: 200px;
+    min-height: 200px;
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 1rem;
+  }
+  
+  .ant-card.dashboard-card {
+    height: 200px;
+    min-height: 200px;
+    max-width: 300px;
+  }
+  
+  .dashboard-header {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-content {
+    padding: 0.5rem;
+  }
+  
+  .ant-card.dashboard-card {
+    height: 200px;
+    min-height: 200px;
+    max-width: 280px;
+  }
+  
+  .dashboard-header {
+    padding: 0.75rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Estilos específicos para iPhone 13/14/15 */
+@media (max-width: 390px) {
+  .ant-card.dashboard-card {
+    max-width: 260px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Estilos específicos para iPhone 11 */
+@media (max-width: 414px) {
+  .ant-card.dashboard-card {
+    max-width: 270px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.45rem;
+  }
+}
+
+/* Estilos específicos para S24 Ultra */
+@media (min-width: 1440px) {
+  .dashboard-content {
+    padding: 2.5rem;
+  }
+  
+  .ant-card.dashboard-card {
+    max-width: 450px;
+  }
+}
+
+/* Estilos específicos para S25 */
+@media (min-width: 1460px) {
+  .dashboard-content {
+    padding: 3rem;
+  }
+  
+  .ant-card.dashboard-card {
+    max-width: 470px;
+  }
+}
+
+/* Estilos específicos para S23 */
+@media (min-width: 1400px) {
+  .dashboard-content {
+    padding: 2.5rem;
+  }
+  
+  .ant-card.dashboard-card {
+    max-width: 420px;
+  }
+}
+
+/* Estilos específicos para A55 */
+@media (max-width: 360px) {
+  .ant-card.dashboard-card {
+    max-width: 240px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.35rem;
+  }
+}
+
+/* Ajustes para o relatório */
+.relatorio-conteudo {
+  padding: 15px;
+}
+
+.relatorio-cabecalho {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.relatorio-cabecalho h1 {
+  color: var(--primary-blue);
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.relatorio-cabecalho h2 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.relatorio-data {
+  font-size: 14px;
+  color: #666;
+}
+
+.relatorio-secao {
+  margin-bottom: 25px;
+}
+
+.relatorio-secao h3 {
+  color: var(--secondary-blue);
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--secondary-blue);
+  padding-left: 10px;
+}
+
+.relatorio-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.relatorio-tabela th {
+  background-color: #f5f5f5;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.relatorio-tabela td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.relatorio-tabela tr:hover {
+  background-color: #f9f9f9;
+}
+
+.relatorio-resumo {
+  background-color: #f5f8ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.relatorio-resumo h3 {
+  color: var(--primary-blue);
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+/* Estilos para impressão */
+@media print {
+  body {
+    background: white;
+    font-size: 12pt;
+  }
+  
+  .relatorio-conteudo {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .relatorio-cabecalho h1 {
+    font-size: 20pt;
+  }
+  
+  .relatorio-cabecalho h2 {
+    font-size: 16pt;
+  }
+  
+  .relatorio-cabecalho .relatorio-data {
+    font-size: 10pt;
+    margin-bottom: 5px;
+  }
+  
+  .relatorio-secao {
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+  }
+  
+  .relatorio-secao h3 {
+    font-size: 14pt;
+    margin-bottom: 5px;
+    border-left: none;
+    border-bottom: 1px solid #333;
+    padding-left: 0;
+  }
+  
+  .relatorio-tabela {
+    page-break-inside: avoid;
+    font-size: 10pt;
+    width: 100%;
+  }
+  
+  .relatorio-tabela th, .relatorio-tabela td {
+    padding: 3px 5px;
+  }
+  
+  .relatorio-tabela th {
+    background-color: #eee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .ant-divider {
+    margin: 8px 0;
+  }
+  
+  .relatorio-resumo {
+    padding: 8px;
+    margin-top: 8px;
+    page-break-inside: avoid;
+  }
+  
+  .relatorio-resumo h3 {
+    font-size: 12pt;
+    margin-bottom: 5px;
+  }
+  
+  /* Esconder elementos não necessários na impressão */
+  .ant-modal-header, 
+  .ant-modal-footer, 
+  button {
+    display: none !important;
+  }
+}
+
+/* Melhorias para responsividade em telas menores */
+@media (max-width: 576px) {
+  .relatorio-tabela {
+    font-size: 11px;
+  }
+  
+  .relatorio-tabela th, 
+  .relatorio-tabela td {
+    padding: 4px;
+  }
+  
+  .relatorio-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .btn-relatorio {
+    flex: 1;
+  }
+  
+  /* Ajustes para o modal em telas menores */
+  .ant-modal {
+    max-width: 98vw !important;
+    margin: 0 auto;
+  }
+  
+  .ant-modal-content {
+    padding: 12px !important;
+  }
+  
+  .ant-modal-header {
+    padding: 12px !important;
+  }
+  
+  .ant-modal-body {
+    padding: 12px !important;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .ant-modal-footer {
+    padding: 12px !important;
+  }
+  
+  /* Melhorar tamanho de toque para botões em dispositivos móveis */
+  .btn-padrao, .btn-icone, .btn-link {
+    min-height: 44px;
+  }
+  
+  /* Melhorar datepicker em dispositivos móveis */
+  .ant-picker-dropdown {
+    width: 100% !important;
+    left: 0 !important;
+  }
+  
+  .ant-picker-panel-container {
+    width: 100% !important;
+  }
+  
+  .ant-picker-cell {
+    padding: 8px 0;
+  }
+  
+  .ant-picker-cell-inner {
+    min-width: 36px;
+    height: 36px;
+    line-height: 36px;
+  }
+}
+
+/* DatePicker mais amigável para mobile */
+.date-picker-mobile {
+  width: 100% !important;
+}
+
+.date-picker-mobile .ant-picker-input {
+  height: 44px;
+  font-size: 16px; /* Evita zoom no iOS */
+}
+
+.date-picker-popup-mobile .ant-picker-panel-container {
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+
+.date-picker-popup-mobile .ant-picker-cell {
+  padding: 8px 0;
+}
+
+.date-picker-popup-mobile .ant-picker-cell-inner {
+  min-width: 36px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.date-picker-popup-mobile .ant-picker-header-view {
+  font-weight: bold;
+}
+
+/* Para centralizar ainda mais o conteúdo dos cartões */
+.ant-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Botão de configurações */
+.btn-settings {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-settings:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: white;
+  transform: rotate(30deg);
+}
+
+/* Menu de configurações */
+.ant-dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(13, 71, 161, 0.15);
+  border: 1px solid rgba(13, 71, 161, 0.1);
+  overflow: hidden;
+}
+
+.ant-dropdown-menu-item {
+  padding: 10px 16px;
+  transition: all 0.2s ease;
+}
+
+.ant-dropdown-menu-item:hover {
+  background-color: var(--light-blue);
+}
+
+.ant-dropdown-menu-item .anticon {
+  margin-right: 8px;
+  color: var(--primary-blue);
+}
+
+/* Estilos para o alerta de variações */
+.variacao-alerta {
+  margin: 0 20px 20px 20px;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.variacao-alerta.fade-out {
+  opacity: 0;
+}
+
+.variacao-alerta .ant-alert-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.variacao-alerta .ant-alert-description {
+  margin-top: 10px;
+}
+
+.variacao-lista {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.variacao-lista li {
+  margin-bottom: 5px;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Botão de logout com estilo vermelho */
+.btn-logout {
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.btn-logout:hover {
+  background-color: #ff4d4f !important;
+  border-color: #ff4d4f !important;
+  opacity: 0.85;
+}
+
+/* Botões de configurações e sair */
+.btn-settings,
+.btn-logout {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  opacity: 1 !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  text-align: center !important;
+  min-width: 90px !important;
+  height: auto !important;
+  min-height: 40px !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+}
+
+.btn-settings .anticon,
+.btn-logout .anticon {
+  font-size: 18px !important;
+  margin-right: 8px !important;
+  color: white !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 24px !important;
+}
+
+.btn-settings {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 12px !important;
+}
+
+.btn-settings:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-logout:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Botões padrão para toda a aplicação */
+.btn-padrao {
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  height: auto !important;
+  min-height: 40px !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+}
+
+.btn-padrao .anticon {
+  font-size: 16px !important;
+  margin-right: 8px !important;
+}
+
+/* Para botões dentro do modal de relatório */
+.btn-relatorio {
+  min-width: 100px !important;
+  padding: 0 16px !important;
+  white-space: nowrap !important;
+}
+
+/* Botões específicos que podem precisar de mais espaço */
+.btn-icone {
+  height: 32px !important;
+  width: 32px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Responsividade para botões */
+@media (max-width: 576px) {
+  .btn-padrao {
+    font-size: 13px !important;
+    padding: 0 12px !important;
+  }
+  
+  .btn-logout, .btn-settings {
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+  }
+  
+  .btn-settings .anticon,
+  .btn-logout .anticon,
+  .btn-padrao .anticon {
+    font-size: 16px !important;
+    margin-right: 4px !important;
+  }
+}

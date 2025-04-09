@@ -1,0 +1,187 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8fc 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 35px;
+  border-radius: 16px;
+  background-color: white;
+  box-shadow: 0 10px 30px rgba(31, 45, 61, 0.1);
+  transition: all 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(31, 45, 61, 0.15);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-header h1 {
+  color: #1a3e5a;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  max-width: 180px;
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* Campos de formulário */
+.ant-form-item {
+  margin-bottom: 22px;
+  width: 100%;
+}
+
+.ant-form-item-label {
+  width: 100% !important;
+  text-align: left !important;
+  padding: 0 !important;
+  margin-bottom: 8px !important;
+}
+
+/* Controla o container dos inputs */
+.ant-form-item-control-input,
+.ant-form-item-control-input-content,
+.ant-form-item-control {
+  width: 100% !important;
+  display: block !important;
+}
+
+/* Estilo específico para o input */
+.ant-input-affix-wrapper,
+.ant-input-affix-wrapper > input.ant-input {
+  width: 100% !important;
+  padding: 12px !important;
+  font-size: 14px !important;
+  color: #1a3e5a !important;
+  background-color: #f5f7fa !important;
+  border-radius: 4px !important;
+  border: none !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Estilo para o placeholder */
+.ant-input-affix-wrapper > input.ant-input::placeholder {
+  color: #8c8c8c !important;
+  font-size: 14px !important;
+  width: 100% !important;
+}
+
+/* Estilo para os ícones dos inputs */
+.ant-input-affix-wrapper > .ant-input-prefix > .anticon > svg {
+  color: #8c8c8c !important;
+}
+
+.ant-input-affix-wrapper > .ant-input-prefix > .anticon {
+  color: #8c8c8c !important;
+  padding-right: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Remove o overlay branco e as bordas */
+.ant-input-affix-wrapper-focused,
+.ant-input-affix-wrapper:hover,
+.ant-input-affix-wrapper:active {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Estilo para botões de login uniformizados */
+.ant-btn {
+  width: 100% !important;
+  height: 44px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  box-sizing: border-box !important;
+}
+
+/* Estilo específico para o botão de login */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%) !important;
+  border: none !important;
+  color: white !important;
+}
+
+/* Estilo para o botão do Google */
+.ant-btn-default {
+  background-color: white !important;
+  color: #757575 !important;
+  border: 1px solid #e1e5eb !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+  color: #1976d2;
+  transition: color 0.3s ease;
+  font-size: 14px;
+}
+
+.forgot-password a:hover {
+  color: #0d47a1;
+  text-decoration: underline;
+}
+
+.error-message {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  padding: 10px 15px;
+  border-radius: 8px;
+  color: #ff4d4f;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.ant-divider {
+  margin: 24px 0;
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 25px;
+  }
+  
+  .login-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .logo {
+    max-width: 150px;
+  }
+}

@@ -1,0 +1,617 @@
+:root {
+  --primary-blue: #0d47a1;
+  --secondary-blue: #1976d2;
+  --light-blue: #e3f2fd;
+  --mobile-padding: 12px;
+  --tablet-padding: 16px;
+  --desktop-padding: 24px;
+  --container-max-width: 1200px;
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --transition-default: all 0.3s ease;
+}
+
+* {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Botões de Confirmação */
+.confirm-btn {
+  background: var(--primary-blue);
+  color: white;
+  box-shadow: 0 4px 6px rgba(13,71,161,0.1);
+}
+
+.confirm-btn:hover {
+  background: var(--secondary-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(13,71,161,0.2);
+}
+
+/* Botões de Transferência */
+.transfer-btn {
+  background: var(--light-blue);
+  color: var(--primary-blue);
+  border: 2px solid var(--primary-blue);
+}
+
+.transfer-btn:hover {
+  background: rgba(13,71,161,0.1);
+  transform: scale(1.02);
+}
+
+/* Demais Botões */
+.default-btn {
+  background: var(--secondary-blue);
+  color: white;
+}
+
+.default-btn:hover {
+  background: #1565c0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Regras globais para responsividade */
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Ajustes para mobile */
+@media (max-width: 576px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .ant-table {
+    font-size: 0.85rem;
+  }
+  
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 10px 8px;
+  }
+  
+  .ant-modal {
+    max-width: 95%;
+    margin: 0 auto;
+  }
+  
+  .ant-form-item-label {
+    padding-bottom: 4px;
+  }
+  
+  .ant-btn {
+    font-size: 0.85rem;
+    padding: 0 12px;
+    height: 32px;
+  }
+  
+  .ant-input, 
+  .ant-select, 
+  .ant-input-affix-wrapper {
+    font-size: 0.85rem;
+  }
+  
+  /* Melhorar rolagem horizontal de tabelas */
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  /* Aumentar tamanho do DatePicker para facilitar toque */
+  .ant-picker {
+    height: 44px !important;
+  }
+  
+  /* Melhorar o painel do calendário */
+  .ant-picker-dropdown {
+    width: 94vw !important;
+    left: 3vw !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  .ant-picker-panel-container {
+    width: 100% !important;
+    border-radius: 8px !important;
+  }
+  
+  .ant-picker-content {
+    width: 100%;
+  }
+  
+  .ant-picker-cell {
+    padding: 8px 0 !important;
+  }
+  
+  .ant-picker-cell-inner {
+    min-width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 16px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  
+  /* Melhorar tamanho de botões e inputs para toque em dispositivos móveis */
+  .ant-btn, .ant-input, .ant-select-selector {
+    min-height: 44px !important;
+  }
+  
+  .ant-input-search .ant-input-search-button {
+    height: 44px !important;
+  }
+  
+  .ant-select-selector .ant-select-selection-search-input {
+    height: 44px !important;
+  }
+  
+  .ant-select-selection-item {
+    line-height: 44px !important;
+  }
+  
+  /* Aumentar área de toque para botões */
+  .ant-btn {
+    padding: 6px 12px !important;
+  }
+  
+  /* Ajustes para RangePicker */
+  .ant-picker-range {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  
+  .ant-picker-range-separator {
+    padding: 8px 0 !important;
+  }
+  
+  .ant-picker-panels {
+    flex-direction: column !important;
+  }
+  
+  /* Melhorias para o calendário */
+  .ant-picker-panel {
+    width: 100% !important;
+  }
+  
+  .ant-picker-date-panel {
+    width: 100% !important;
+  }
+  
+  .ant-picker-header {
+    padding: 10px 8px !important;
+  }
+  
+  .ant-picker-header-view {
+    font-size: 16px !important;
+    font-weight: bold !important;
+  }
+  
+  .ant-picker-cell.ant-picker-cell-today .ant-picker-cell-inner {
+    border: 2px solid #1890ff !important;
+  }
+  
+  .ant-picker-cell.ant-picker-cell-selected .ant-picker-cell-inner {
+    background: #1890ff !important;
+    color: white !important;
+  }
+  
+  /* Modal em tela cheia para dispositivos móveis */
+  .ant-modal {
+    top: 0 !important;
+    padding-bottom: 0 !important;
+    max-width: 100vw !important;
+  }
+  
+  .ant-modal-content {
+    border-radius: 0 !important;
+  }
+}
+
+/* Ajustes para tablets */
+@media (min-width: 577px) and (max-width: 768px) {
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 12px 8px;
+  }
+  
+  .ant-modal {
+    max-width: 90%;
+    margin: 0 auto;
+  }
+}
+
+/* Desabilitar hover em dispositivos móveis */
+@media (hover: none) {
+  .ant-btn:hover,
+  .ant-card:hover,
+  .ant-input:hover,
+  .ant-select:hover {
+    transform: none !important;
+  }
+}
+
+/* DatePicker melhorado para dispositivos móveis - aplicado globalmente */
+.ant-picker {
+  width: 100% !important;
+}
+
+.ant-picker-input input {
+  font-size: 16px !important; /* Evita zoom no iPhone */
+  height: 44px !important;
+}
+
+.ant-picker-dropdown {
+  margin-top: 4px;
+}
+
+/* Estilos globais para formulários */
+/* ... existing code ... */
+
+/* Padronização de campos de formulário */
+.form-field-padronizado {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  margin-bottom: 8px !important;
+  border: 1px solid #e1e5eb !important;
+  transition: all 0.3s !important;
+  display: block !important;
+}
+
+/* Input styles refinados */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+.ant-input,
+.login-form-input {
+  display: block !important;  
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  padding: 0 12px !important;
+  border: 1px solid #e1e5eb !important;
+  transition: all 0.3s !important;
+  font-size: 16px !important;
+  box-sizing: border-box !important;
+  line-height: normal !important;
+}
+
+/* Input de número - ajustes específicos */
+input[type="number"],
+.ant-input-number-input {
+  -moz-appearance: textfield !important; /* Firefox */
+  appearance: textfield !important;
+}
+
+/* Remove as setas do input type number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* Centralização de texto em inputs para melhorar legibilidade */
+.ant-input, 
+.ant-input-affix-wrapper,
+.ant-select-selection-search-input,
+input::placeholder {
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.5 !important;
+}
+
+/* Especificando combobox mencionados */
+.ant-select,
+.ant-select-selector,
+.ant-select-selection-search-input {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s !important;
+}
+
+.ant-select-selector {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  border: 1px solid #e1e5eb !important;
+  height: 44px !important;
+}
+
+/* Centralização de texto em inputs */
+.ant-input, 
+.ant-input-affix-wrapper,
+.ant-select-selection-search-input,
+input::placeholder {
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.5 !important; /* Melhor para legibilidade */
+}
+
+/* Centralização do texto dentro do input password */
+.ant-input-affix-wrapper > input.ant-input {
+  padding: 0 !important;
+  height: 100% !important;
+}
+
+/* Ajustes para ícones nos inputs */
+.ant-input-prefix, 
+.ant-input-suffix {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+/* Correção específica para inputs com prefixos */
+.ant-input-affix-wrapper .ant-input-prefix {
+  margin-right: 8px !important;
+}
+
+/* Correção específica para inputs de senha */
+.ant-input-password .ant-input {
+  height: 100% !important;
+  line-height: normal !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Correção para inputs dentro de wrappers (como password fields) */
+.ant-input-affix-wrapper {
+  padding: 0 12px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Correção específica para a barra de busca do AutoComplete */
+.search-bar .ant-input-affix-wrapper {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.search-bar .ant-input-affix-wrapper .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  height: 100% !important;
+}
+
+.search-bar .ant-input-affix-wrapper .ant-input-suffix {
+  margin-left: 8px !important;
+}
+
+/* Estilos para garantir que o AutoComplete fique correto */
+.search-bar.ant-select-auto-complete {
+  width: 100% !important;
+}
+
+/* Especificando spinbutton mencionados */
+input[type="number"],
+.ant-input-number,
+.ant-input-number-input {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  padding: 0 12px !important;
+  border: 1px solid #e1e5eb !important;
+  transition: all 0.3s !important;
+  font-size: 16px !important;
+  box-sizing: border-box !important;
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
+/* Remove as setas do input type number - novamente para garantir */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* DatePicker com altura consistente */
+.ant-picker {
+  height: 44px !important;
+  border-radius: 8px !important;
+}
+
+/* Estilos para o estado hover e focus dos campos */
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+.ant-input:hover,
+.ant-select:hover .ant-select-selector,
+.ant-input-number:hover,
+.ant-picker:hover {
+  border-color: #e1e5eb !important; /* Mantém a mesma cor da borda no hover */
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+.ant-input:focus,
+.ant-select-focused .ant-select-selector,
+.ant-input-number-focused,
+.ant-picker-focused {
+  border-color: #e1e5eb !important; /* Mantém a mesma cor da borda no focus */
+  box-shadow: none !important; /* Remove a sombra azul */
+  outline: none !important;
+}
+
+/* Padronização de formulários */
+.ant-form-vertical .ant-form-item,
+.ant-form-item {
+  width: 100% !important;
+  margin-bottom: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.ant-form-vertical .ant-form-item-label,
+.ant-form-item-label {
+  text-align: left !important;
+  margin-bottom: 8px !important;
+}
+
+.ant-form-item-control-input {
+  min-height: 44px !important;
+}
+
+/* Ajustar o grid de formulário */
+.form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(1, 1fr) !important;
+  gap: 16px !important;
+  width: 100% !important;
+}
+
+/* Responsividade para formulários */
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Fixando altura da área de seleção */
+.ant-select-selection-search {
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Ajustes para o placeholder em selects */
+.ant-select-selection-placeholder {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+/* Ajustes para o item selecionado em selects */
+.ant-select-selection-item {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  line-height: normal !important;
+}
+
+/* Ajuste para o DatePicker */
+.ant-picker-input {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+.ant-picker-input > input {
+  height: auto !important;
+  line-height: normal !important;
+  padding: 0 !important;
+}
+
+/* Botões de login padronizados */
+.login-form-button,
+.google-login-button {
+  width: 100% !important;
+  height: 44px !important;
+  font-size: 16px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  box-sizing: border-box !important; /* Garantir tamanho consistente */
+}
+
+/* Estilos para o DatePicker e Select mais consistentes */
+.ant-picker-input,
+.ant-select-selector {
+  height: 44px !important;
+  padding: 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 16px !important;
+}
+
+/* Estilo da dropdown de busca nos estoques */
+.dropdown-busca {
+  max-width: 500px !important;
+}
+
+.opcao-busca {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  font-weight: 500;
+  color: #333;
+}
+
+.opcao-busca div {
+  display: flex;
+  margin-top: 3px;
+}
+
+.opcao-busca small {
+  color: #666;
+  font-size: 0.8em;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+/* Estilo simplificado para a dropdown de busca */
+.ant-select-dropdown {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+}
+
+.ant-select-item {
+  padding: 8px 12px !important;
+  transition: background-color 0.2s;
+}
+
+/* Remover bordas e containers dentro da busca */
+.ant-select-item-option-content {
+  white-space: normal;
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}

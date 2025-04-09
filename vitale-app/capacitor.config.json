@@ -1,0 +1,10 @@
+{
+  "appId": "com.vitale.controleestoque",
+  "appName": "Vitale CE",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}

@@ -1,0 +1,137 @@
+.registro-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.registro-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+}
+
+.registro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.registro-title {
+  display: flex;
+  align-items: center;
+}
+
+.registro-icon {
+  font-size: 32px;
+  margin-right: 16px;
+  color: #1a3e5a;
+}
+
+.registro-actions {
+  margin-bottom: 20px;
+}
+
+.registro-search {
+  width: 300px;
+}
+
+.registro-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 16px;
+}
+
+.registro-table {
+  margin-bottom: 20px;
+}
+
+.registro-footer {
+  text-align: right;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Responsividade para tablets */
+@media (max-width: 768px) {
+  .registro-container {
+    padding: 15px;
+  }
+
+  .registro-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .registro-actions {
+    width: 100%;
+  }
+  
+  .registro-search {
+    width: 100%;
+  }
+  
+  .registro-table .ant-table {
+    font-size: 0.9rem;
+  }
+  
+  .registro-table .ant-table-thead > tr > th,
+  .registro-table .ant-table-tbody > tr > td {
+    padding: 10px 8px;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+/* Responsividade para celulares */
+@media (max-width: 576px) {
+  .registro-container {
+    padding: 10px;
+  }
+  
+  .registro-card {
+    border-radius: 8px;
+  }
+  
+  .registro-icon {
+    font-size: 24px;
+    margin-right: 10px;
+  }
+  
+  .registro-title h2 {
+    font-size: 1.2rem;
+  }
+  
+  .registro-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .registro-table .ant-table-thead > tr > th,
+  .registro-table .ant-table-tbody > tr > td {
+    padding: 8px 6px;
+    font-size: 0.85rem;
+  }
+  
+  /* Ajuste para quebrar texto em colunas maiores */
+  .registro-table .ant-table-tbody > tr > td:nth-child(3) {
+    max-width: 200px;
+    white-space: normal;
+    word-break: break-word;
+  }
+  
+  .registro-footer {
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  
+  /* Tornar botões mais fáceis de tocar */
+  .registro-container .ant-btn {
+    width: 100%;
+    margin-bottom: 5px;
+    height: 40px;
+  }
+} 

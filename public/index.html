@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon-vitale.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Vitale - Sistema de Controle de Estoque"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo-vitale192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Capacitor -->
+    <script async src="https://unpkg.com/@capacitor/core@latest"></script>
+    <script async src="https://unpkg.com/@capacitor/ios@latest"></script>
+    <script>
+      // Inicializar o Capacitor
+      if (window.Capacitor) {
+        window.Capacitor.init({
+          webDir: 'public',
+          plugins: {
+            SplashScreen: {
+              launchShowDuration: 2000,
+              backgroundColor: '#ffffff',
+              androidSplashResourceName: 'splash',
+              androidSplashImageUrl: 'assets/splash.png',
+              showSpinner: false,
+              androidSpinnerStyle: 'large',
+              spinnerColor: '#999999',
+              androidTheme: '@style/Theme.AppCompat.Light.NoActionBar'
+            }
+          }
+        });
+      }
+    </script>
+    <title>Vitale - Controle de Estoque</title>
+  </head>
+  <body>
+    <noscript>Você precisa habilitar o JavaScript para usar esta aplicação.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
