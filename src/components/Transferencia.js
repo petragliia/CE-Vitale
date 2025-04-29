@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Select, Button, Form, notification, Input, Spin } from "antd";
+import { Select, Button, Form, notification, Spin, Row, Col, Card, Modal, Space, InputNumber, Divider } from "antd";
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import moment from "moment";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, SwapOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { stocks } from "../stocks";
 import "./Transferencia.css";
 import "./item-details-box.css";
 import { registrarOperacao } from "../services/registroService";
 import { useAuth } from "../context/AuthContext";
 
-function Transferencia({ sourceStock, onBack }) {
+function Transferencia({ sourceStock, onBack, visible, onCancel }) {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [destinoStock, setDestinoStock] = useState(null);
@@ -34,6 +34,8 @@ function Transferencia({ sourceStock, onBack }) {
         ...doc.data(),
         validade: doc.data().validade?.toDate() // Converter Timestamp para Date
       }));
+      // Ordenar itens por nome para facilitar a busca
+      list.sort((a, b) => a.nome.localeCompare(b.nome));
       setItems(list);
       console.log(`Carregados ${list.length} itens do estoque ${sourceStock}`);
     } catch (error) {
@@ -46,9 +48,13 @@ function Transferencia({ sourceStock, onBack }) {
 
   // Carregar itens quando o componente montar ou o estoque de origem mudar
   useEffect(() => {
-    setSelectedItem(null); // Resetar item selecionado quando mudar de estoque
-    fetchItems();
-  }, [sourceStock, fetchItems]);
+    if (visible) {
+      setSelectedItem(null); // Resetar item selecionado quando abrir o modal
+      setDestinoStock(null); // Resetar destino quando abrir o modal
+      setQuantidadeTransferir(0); // Resetar quantidade quando abrir o modal
+      fetchItems();
+    }
+  }, [fetchItems, visible, sourceStock]);
 
   const handleRefresh = () => {
     setSelectedItem(null);
@@ -179,7 +185,13 @@ function Transferencia({ sourceStock, onBack }) {
       notification.success({ message: "Transferência concluída!" });
       setSelectedItem(null);
       setQuantidadeTransferir(0);
+      setDestinoStock(null);
       await fetchItems(); // Recarregar itens atualizados
+      
+      // Fechar modal após transferência bem-sucedida
+      if (onCancel) {
+        onCancel();
+      }
       
     } catch (error) {
       console.error("Erro na transferência:", error);
@@ -191,130 +203,218 @@ function Transferencia({ sourceStock, onBack }) {
     setIsTransferring(false);
   };
 
+  const getStockDisplayName = (stockKey) => {
+    const displayNames = {
+      'principal': 'Estoque Principal',
+      'vet': 'Estoque Veterinário',
+      'internacao': 'Estoque Internação',
+      'reposicao': 'Estoque Reposição Consultórios'
+    };
+    return displayNames[stockKey] || stockKey;
+  };
+
   return (
-    <div className="transferencia-container">
-      <h1>Transferência de Itens</h1>
-      <div className="header-buttons">
-        <Button onClick={onBack} style={{ marginRight: "10px" }}>
-          Voltar
-        </Button>
-        <Button 
-          icon={<ReloadOutlined />} 
-          onClick={handleRefresh}
-          loading={isLoading}
-          style={{ marginBottom: "20px" }}
-        >
-          Atualizar Lista
-        </Button>
-      </div>
-      
-      {isLoading ? (
-        <div style={{ textAlign: 'center', margin: '30px 0' }}>
-          <Spin size="large">
-            <div style={{ marginTop: "20px", padding: "30px 50px", textAlign: "center" }}>
-              Carregando itens...
-            </div>
-          </Spin>
+    <Modal
+      title={
+        <div className="transferencia-header">
+          <SwapOutlined className="transferencia-icon" />
+          <span>Transferência de Itens de {getStockDisplayName(sourceStock)}</span>
         </div>
-      ) : items.length === 0 ? (
-        <div style={{ textAlign: 'center', margin: '30px 0' }}>
-          <p>Nenhum item disponível para transferência neste estoque.</p>
-        </div>
-      ) : (
-        <Form layout="vertical">
-          <Form.Item label="Item para Transferir">
-            <Select
-              placeholder="Selecione um item"
-              value={selectedItem ? selectedItem.id : undefined}
-              onChange={(value) => {
-                const item = items.find(i => i.id === value);
-                setSelectedItem(item);
-                setQuantidadeTransferir(0); // Reset quantidade ao mudar item
-              }}
-              className="form-field-padronizado"
-              optionLabelProp="label"
-              listHeight={320}
-            >
-              {items.map(item => (
-                <Select.Option 
-                  key={item.id} 
-                  value={item.id}
-                  label={item.nome}
-                >
-                  <div className="transferencia-item-info">
-                    <strong>{item.nome}</strong>
-                    <div style={{ fontSize: '12px', color: '#666' }}>
-                      <span>Quantidade: {item.quantidade} {item.tipoQuantidade}</span>
-                      {item.categoria && <span> | Categoria: {item.categoria}</span>}
-                      <span> | Preço: R$ {Number(item.valor).toFixed(2)}</span>
-                      <br />
-                      <span>Validade: {item.validade ? moment(item.validade).format('DD/MM/YYYY') : 'Sem validade'}</span>
-                      <br />
-                      <span>Fornecedor: {item.fornecedor || 'Não especificado'}</span>
-                    </div>
-                  </div>
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          {selectedItem && (
-            <>
-              <div className="item-details-box">
-                <h3>Detalhes do Item Selecionado</h3>
-                <div className="item-details">
-                  <p><strong>Nome:</strong> {selectedItem.nome}</p>
-                  <p><strong>Categoria:</strong> {selectedItem.categoria || 'N/A'}</p>
-                  <p><strong>Preço:</strong> R$ {Number(selectedItem.valor).toFixed(2)}</p>
-                  <p><strong>Tipo:</strong> {selectedItem.tipoQuantidade}</p>
-                  <p><strong>Validade:</strong> {selectedItem.validade ? moment(selectedItem.validade).format('DD/MM/YYYY') : 'Sem validade'}</p>
-                  <p><strong>Quantidade disponível:</strong> {selectedItem.quantidade} {selectedItem.tipoQuantidade}</p>
-                </div>
-              </div>
-              <Form.Item label="Quantidade para Transferir">
-                <Input
-                  type="number"
-                  min={1}
-                  max={selectedItem ? selectedItem.quantidade : 0}
-                  value={quantidadeTransferir}
-                  onChange={(e) => setQuantidadeTransferir(Number(e.target.value))}
-                  placeholder="Digite a quantidade"
-                  className="form-field-padronizado"
-                />
-                <small style={{ display: 'block', marginTop: '5px' }}>
-                  Disponível: {selectedItem?.quantidade} {selectedItem?.tipoQuantidade}
-                </small>
-              </Form.Item>
-            </>
-          )}
-          <Form.Item label="Estoque de Destino">
-            <Select
-              placeholder="Selecione o estoque de destino"
-              value={destinoStock}
-              onChange={setDestinoStock}
-              className="form-field-padronizado"
-            >
-              {destinationOptions.map(stockKey => (
-                <Select.Option key={stockKey} value={stockKey}>
-                  {stockKey.charAt(0).toUpperCase() + stockKey.slice(1).replace(/([A-Z])/g, ' $1')}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
+      }
+      visible={visible}
+      onCancel={onCancel}
+      footer={null}
+      width={800}
+      destroyOnClose={true}
+      maskClosable={false}
+      className="transferencia-modal"
+    >
+      <Card
+        className="transferencia-card"
+        title={null}
+        extra={
+          <Space>
             <Button 
-              type="primary" 
-              onClick={handleTransfer} 
-              disabled={isTransferring || !selectedItem || !destinoStock || quantidadeTransferir <= 0}
-              loading={isTransferring}
-              block
+              icon={<ReloadOutlined />} 
+              onClick={handleRefresh}
+              loading={isLoading}
             >
-              {isTransferring ? "Transferindo..." : "Transferir"}
+              Atualizar
             </Button>
-          </Form.Item>
-        </Form>
-      )}
-    </div>
+          </Space>
+        }
+      >
+        {isLoading ? (
+          <div className="loading-container">
+            <Spin size="large" />
+            <p>Carregando itens...</p>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="empty-state">
+            <p>Nenhum item disponível para transferência neste estoque.</p>
+          </div>
+        ) : (
+          <Form layout="vertical" className="transferencia-form">
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                <Form.Item 
+                  label="Item para Transferir" 
+                  required
+                  tooltip="Selecione o produto que deseja transferir"
+                >
+                  <Select
+                    placeholder="Selecione um item"
+                    value={selectedItem ? selectedItem.id : undefined}
+                    onChange={(value) => {
+                      const item = items.find(i => i.id === value);
+                      setSelectedItem(item);
+                      setQuantidadeTransferir(0); // Reset quantidade ao mudar item
+                    }}
+                    className="form-field-padronizado"
+                    optionLabelProp="label"
+                    listHeight={320}
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children[0].props.children[0].props.children.toLowerCase().includes(input.toLowerCase())
+                    }
+                    style={{ width: '100%' }}
+                  >
+                    {items.map(item => (
+                      <Select.Option 
+                        key={item.id} 
+                        value={item.id}
+                        label={item.nome}
+                      >
+                        <div className="transferencia-item-info">
+                          <strong>{item.nome}</strong>
+                          <div className="transferencia-item-details">
+                            <div><span className="detail-label">Quantidade:</span> {item.quantidade} {item.tipoQuantidade}</div>
+                            {item.categoria && <div><span className="detail-label">Categoria:</span> {item.categoria}</div>}
+                            <div><span className="detail-label">Preço:</span> R$ {Number(item.valor).toFixed(2)}</div>
+                            <div><span className="detail-label">Validade:</span> {item.validade ? moment(item.validade).format('DD/MM/YYYY') : 'Sem validade'}</div>
+                          </div>
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                <Form.Item 
+                  label="Destino" 
+                  required
+                  tooltip="Selecione o estoque para onde o item será transferido"
+                >
+                  <Select
+                    placeholder="Selecione o estoque de destino"
+                    value={destinoStock}
+                    onChange={setDestinoStock}
+                    className="form-field-padronizado"
+                    style={{ width: '100%' }}
+                  >
+                    {destinationOptions.map(key => (
+                      <Select.Option key={key} value={key}>
+                        {getStockDisplayName(key)}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {selectedItem && (
+              <>
+                <Divider orientation="left">Detalhes do Item Selecionado</Divider>
+                <div className="item-details-box">
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                      <div className="detail-item">
+                        <span className="detail-label">Nome:</span>
+                        <span className="detail-value">{selectedItem.nome}</span>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                      <div className="detail-item">
+                        <span className="detail-label">Categoria:</span>
+                        <span className="detail-value">{selectedItem.categoria || 'N/A'}</span>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                      <div className="detail-item">
+                        <span className="detail-label">Disponível:</span>
+                        <span className="detail-value highlight">{selectedItem.quantidade} {selectedItem.tipoQuantidade}</span>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                      <div className="detail-item">
+                        <span className="detail-label">Validade:</span>
+                        <span className="detail-value">{selectedItem.validade ? moment(selectedItem.validade).format('DD/MM/YYYY') : 'Sem validade'}</span>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                      <div className="detail-item">
+                        <span className="detail-label">Valor:</span>
+                        <span className="detail-value">R$ {Number(selectedItem.valor).toFixed(2)}</span>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                      <div className="detail-item">
+                        <span className="detail-label">Fornecedor:</span>
+                        <span className="detail-value">{selectedItem.fornecedor || 'N/A'}</span>
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
+                <Form.Item 
+                  label="Quantidade a Transferir" 
+                  required
+                  tooltip="Informe a quantidade que deseja transferir. Deve ser menor ou igual à quantidade disponível."
+                >
+                  <InputNumber
+                    min={1}
+                    max={selectedItem.quantidade}
+                    value={quantidadeTransferir}
+                    onChange={setQuantidadeTransferir}
+                    style={{ width: '100%' }}
+                    addonAfter={selectedItem.tipoQuantidade}
+                  />
+                </Form.Item>
+              </>
+            )}
+
+            <div className="form-actions">
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Button 
+                    onClick={onCancel}
+                    size="large"
+                    block
+                  >
+                    Cancelar
+                  </Button>
+                </Col>
+                <Col span={12}>
+                  <Button 
+                    type="primary" 
+                    onClick={handleTransfer} 
+                    loading={isTransferring}
+                    disabled={!selectedItem || !destinoStock || quantidadeTransferir <= 0}
+                    icon={<ArrowRightOutlined />}
+                    size="large"
+                    block
+                  >
+                    Transferir Item
+                  </Button>
+                </Col>
+              </Row>
+            </div>
+          </Form>
+        )}
+      </Card>
+    </Modal>
   );
 }
 
-export default Transferencia; 
+export default Transferencia;

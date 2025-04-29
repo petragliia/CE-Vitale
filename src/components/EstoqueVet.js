@@ -1,61 +1,68 @@
-// components/EstoqueVet.jsx
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { 
-  Table, Button, Form, Modal, Input, DatePicker, Select, message, Drawer, Row, Col
-  // eslint-disable-next-line no-unused-vars
-  /* Componentes que podem ser necessários no futuro:
-  Dropdown, Space, Tooltip, Badge, Popconfirm, Tag, Empty */
+  Table, Button, Form, Modal, Input, DatePicker, Select, 
+  Tooltip, Badge, Popconfirm, Tag, Space, 
+  Empty, Drawer, message, AutoComplete
 } from "antd";
 import { 
   PlusOutlined, FilterOutlined, ReloadOutlined, 
-  SwapOutlined, EditOutlined, DeleteOutlined, 
-  AreaChartOutlined, BarsOutlined, LogoutOutlined,
-  InboxOutlined, MedicineBoxOutlined, CoffeeOutlined, 
-  WarningOutlined
-  // eslint-disable-next-line no-unused-vars
-  /* Ícones que podem ser necessários no futuro:
-  SearchOutlined, EyeOutlined */
+  EditOutlined, DeleteOutlined, 
+  LogoutOutlined,
+  InboxOutlined, MedicineBoxOutlined, CoffeeOutlined, EyeOutlined,
+  WarningOutlined, SwapOutlined, SearchOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebaseConfig";
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip as ChartTooltip, Legend } from "chart.js";
 import moment from "moment";
-import Transferencia from "./Transferencia";
 import { stocks } from "../stocks";
-import "./EstoqueVet.css";
+import "./EstoquePrincipal.css";
 import "./estoques-comum.css";
 import "./date-picker-mobile.css";
 import { registrarOperacao } from "../services/registroService";
+import Transferencia from './Transferencia';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ChartTooltip, Legend);
+
+// Constantes para ícones de categoria
+const CATEGORIA_ICONS = {
+  Medicamentos: <MedicineBoxOutlined />,
+  Insumos: <InboxOutlined />,
+  Comida: <CoffeeOutlined />
+};
+
+// Configuração para notificações de estoque
+const ESTOQUE_MINIMO = 5;
+const ESTOQUE_BAIXO = 10;
 
 function EstoqueVet() {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [produtos, setProdutos] = useState([]);
+  const [produtosFiltrados, setProdutosFiltrados] = useState([]);
   const [carregando, setCarregando] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [produtoEditando, setProdutoEditando] = useState(null);
-  const [form] = Form.useForm();
-  // eslint-disable-next-line no-unused-vars
-  const [atualizarTabs, setAtualizarTabs] = useState(0);
-  const [showTransfer, setShowTransfer] = useState(false);
-  const [modalLevaVisible, setModalLevaVisible] = useState(false);
-  const [formLeva] = Form.useForm();
-  const [produtosSelecionaveis, setProdutosSelecionaveis] = useState([]);
-  const [produtoSelecionadoLeva, setProdutoSelecionadoLeva] = useState(null);
-  // Estado produtosFiltrados removido por não ser utilizado (usamos produtosFiltradosEOrdenados com useMemo)
-  
-  // Novos estados para a interface moderna
   const [busca, setBusca] = useState("");
-  const [exibirGrafico, setExibirGrafico] = useState(true);
-  const [filtroVisivel, setFiltroVisivel] = useState(false);
-
-  // Estados para filtros avançados
-  // eslint-disable-next-line no-unused-vars
+  const [categoriaAtiva, setCategoriaAtiva] = useState("todos");
+  const [estatisticas, setEstatisticas] = useState({
+    total: 0,
+    estoqueBaixo: 0,
+    valorTotal: 0,
+    porCategoria: {}
+  });
+  
+  // Estado para gerenciar modais e drawers
+  const [modalVisible, setModalVisible] = useState(false);
+  const [drawerDetalhesVisible, setDrawerDetalhesVisible] = useState(false);
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const [produtoEditando, setProdutoEditando] = useState(null);
+  const [mostrarGrafico, setMostrarGrafico] = useState(true);
+  const [form] = Form.useForm();
+  const [transferenciaModalVisible, setTransferenciaModalVisible] = useState(false);
+  
+  // Estados para filtros
   const [filtroAvancado, setFiltroAvancado] = useState(false);
   const [filtros, setFiltros] = useState({
     nome: "",
@@ -68,76 +75,130 @@ function EstoqueVet() {
     validadeInicio: null,
     validadeFim: null
   });
-
-  // eslint-disable-next-line no-unused-vars
+  
+  // Coleção referente ao estoque principal
+  const collectionName = stocks.vet;
+  
+  // Cores para categorias com melhor contraste
   const CORES_POR_CATEGORIA = useMemo(() => ({
-    Medicamentos: "#1976D2",
-    Insumos: "#4CAF50",
-    Comida: "#FF9800"
+    Medicamentos: "#3498db",
+    Insumos: "#2ecc71",
+    Comida: "#f39c12"
   }), []);
-
-  const aplicarFiltros = () => {
-    // Filtra os produtos com base nos múltiplos critérios
-    const produtosFiltradosResult = produtos.filter(produto => {
+  
+  // Função para aplicar filtros
+  const aplicarFiltros = useCallback((termoBusca, filtrosAtivos, listaProdutos, categoria) => {
+    let resultado = [...listaProdutos];
+    
+    // Filtro por termo de busca
+    if (termoBusca) {
+      const termo = termoBusca.toLowerCase();
+      resultado = resultado.filter(
+        p => p.nome?.toLowerCase().includes(termo) || 
+             p.fornecedor?.toLowerCase().includes(termo)
+      );
+    }
+    
+    // Filtro por categoria
+    if (categoria && categoria !== "todos") {
+      resultado = resultado.filter(p => p.categoria === categoria);
+    }
+    
+    // Aplicar filtros avançados
+    if (filtroAvancado) {
       // Filtro por nome
-      if (filtros.nome && !produto.nome.toLowerCase().includes(filtros.nome.toLowerCase())) {
-        return false;
+      if (filtrosAtivos.nome) {
+        resultado = resultado.filter(p => 
+          p.nome?.toLowerCase().includes(filtrosAtivos.nome.toLowerCase())
+        );
       }
       
       // Filtro por fornecedor
-      if (filtros.fornecedor && (!produto.fornecedor || !produto.fornecedor.toLowerCase().includes(filtros.fornecedor.toLowerCase()))) {
-        return false;
+      if (filtrosAtivos.fornecedor) {
+        resultado = resultado.filter(p => 
+          p.fornecedor?.toLowerCase().includes(filtrosAtivos.fornecedor.toLowerCase())
+        );
       }
       
       // Filtro por preço mínimo
-      if (filtros.precoMin !== "" && Number(produto.valor) < Number(filtros.precoMin)) {
-        return false;
+      if (filtrosAtivos.precoMin) {
+        resultado = resultado.filter(p => 
+          Number(p.valor) >= Number(filtrosAtivos.precoMin)
+        );
       }
       
       // Filtro por preço máximo
-      if (filtros.precoMax !== "" && Number(produto.valor) > Number(filtros.precoMax)) {
-        return false;
+      if (filtrosAtivos.precoMax) {
+        resultado = resultado.filter(p => 
+          Number(p.valor) <= Number(filtrosAtivos.precoMax)
+        );
       }
       
       // Filtro por quantidade mínima
-      if (filtros.quantidadeMin !== "" && Number(produto.quantidade) < Number(filtros.quantidadeMin)) {
-        return false;
+      if (filtrosAtivos.quantidadeMin) {
+        resultado = resultado.filter(p => 
+          Number(p.quantidade) >= Number(filtrosAtivos.quantidadeMin)
+        );
       }
       
       // Filtro por quantidade máxima
-      if (filtros.quantidadeMax !== "" && Number(produto.quantidade) > Number(filtros.quantidadeMax)) {
-        return false;
+      if (filtrosAtivos.quantidadeMax) {
+        resultado = resultado.filter(p => 
+          Number(p.quantidade) <= Number(filtrosAtivos.quantidadeMax)
+        );
       }
       
       // Filtro por período de validade
-      if (filtros.validadeInicio && produto.validade && moment(produto.validade).isBefore(filtros.validadeInicio, 'day')) {
-        return false;
+      if (filtrosAtivos.validadeInicio && filtrosAtivos.validadeInicio) {
+        resultado = resultado.filter(p => 
+          p.validade && moment(p.validade).isAfter(filtrosAtivos.validadeInicio)
+        );
       }
       
-      if (filtros.validadeFim && produto.validade && moment(produto.validade).isAfter(filtros.validadeFim, 'day')) {
-        return false;
+      if (filtrosAtivos.validadeFim) {
+        resultado = resultado.filter(p => 
+          p.validade && moment(p.validade).isBefore(filtrosAtivos.validadeFim)
+        );
       }
       
-      return true;
-    });
-    
-    // Ordenação por validade
-    if (filtros.validadeOrdem) {
-      produtosFiltradosResult.sort((a, b) => {
-        if (!a.validade) return 1;
-        if (!b.validade) return -1;
-        
-        if (filtros.validadeOrdem === 'asc') {
-          return moment(a.validade).diff(moment(b.validade));
-        } else {
-          return moment(b.validade).diff(moment(a.validade));
-        }
-      });
+      // Ordenação por validade
+      if (filtrosAtivos.validadeOrdem) {
+        resultado.sort((a, b) => {
+          if (!a.validade) return 1;
+          if (!b.validade) return -1;
+          
+          if (filtrosAtivos.validadeOrdem === 'asc') {
+            return moment(a.validade).diff(moment(b.validade));
+          } else {
+            return moment(b.validade).diff(moment(a.validade));
+          }
+        });
+      }
     }
     
-    setFiltroVisivel(false);
-  };
-
+    setProdutosFiltrados(resultado);
+  }, [filtroAvancado]);
+  
+  // Função para buscar produtos
+  const handleBusca = useCallback((valor) => {
+    setBusca(valor);
+    aplicarFiltros(valor, filtros, produtos, categoriaAtiva);
+  }, [filtros, produtos, categoriaAtiva, aplicarFiltros]);
+  
+  // Função para obter sugestões de busca baseadas nos produtos existentes
+  const getSugestoesBusca = useCallback(() => {
+    // Extrair nomes únicos de produtos para sugestões
+    const nomes = [...new Set(produtos.map(p => p.nome))];
+    // Extrair fornecedores únicos para sugestões
+    const fornecedores = [...new Set(produtos.map(p => p.fornecedor).filter(Boolean))];
+    // Extrair categorias únicas para sugestões
+    const categorias = [...new Set(produtos.map(p => p.categoria))];
+    
+    // Combinar todas as sugestões
+    return [...nomes, ...fornecedores, ...categorias].slice(0, 10);
+  }, [produtos]);
+  
+  // Limpar filtros
   const limparFiltros = () => {
     setFiltros({
       nome: "",
@@ -150,266 +211,250 @@ function EstoqueVet() {
       validadeInicio: null,
       validadeFim: null
     });
+    setBusca("");
+    setCategoriaAtiva("todos");
+    aplicarFiltros("", {}, produtos, "todos");
   };
 
-  // Estado para armazenar os IDs dos produtos fantasmas (que aparecem na UI mas não no banco)
-  const [produtosFantasmasIds, setProdutosFantasmasIds] = useState(() => {
-    // Recuperar lista de produtos fantasmas do localStorage
-    try {
-      const savedIds = localStorage.getItem('produtosFantasmasVet');
-      return savedIds ? JSON.parse(savedIds) : [];
-    } catch (e) {
-      console.error('Erro ao carregar produtos fantasmas do localStorage:', e);
-      return [];
-    }
-  });
+  // Calcular estatísticas
+  const calcularEstatisticas = useCallback((produtosData) => {
+    const estatisticasNovas = {
+      total: produtosData.length,
+      estoqueBaixo: produtosData.filter(p => p.quantidade < ESTOQUE_MINIMO).length,
+      valorTotal: produtosData.reduce((total, p) => total + (p.valor * p.quantidade), 0),
+      porCategoria: {}
+    };
+    
+    // Calcular total por categoria
+    produtosData.forEach(produto => {
+      if (!estatisticasNovas.porCategoria[produto.categoria]) {
+        estatisticasNovas.porCategoria[produto.categoria] = {
+          quantidade: 0,
+          valor: 0
+        };
+      }
+      estatisticasNovas.porCategoria[produto.categoria].quantidade += produto.quantidade;
+      estatisticasNovas.porCategoria[produto.categoria].valor += (produto.valor * produto.quantidade);
+    });
+    
+    setEstatisticas(estatisticasNovas);
+  }, []);
 
-  // Salvar produtos fantasmas no localStorage quando a lista mudar
-  useEffect(() => {
-    try {
-      localStorage.setItem('produtosFantasmasVet', JSON.stringify(produtosFantasmasIds));
-    } catch (e) {
-      console.error('Erro ao salvar produtos fantasmas no localStorage:', e);
-    }
-  }, [produtosFantasmasIds]);
-
+  // Carregar produtos do Firebase
   const carregarProdutos = useCallback(async () => {
     try {
-      console.log('Carregando produtos da coleção:', stocks.vet);
-      console.log('Produtos fantasmas a serem filtrados:', produtosFantasmasIds);
+      setCarregando(true);
+      const querySnapshot = await getDocs(collection(db, collectionName));
       
-      const querySnapshot = await getDocs(collection(db, stocks.vet));
-      const lista = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        validade: doc.data().validade?.toDate(),
-        quantidade: Number(doc.data().quantidade),
-        valor: Number(doc.data().valor)
-      }));
+      const produtosData = querySnapshot.docs.map(doc => {
+        const dados = doc.data();
+        return {
+          ...dados,
+          id: doc.id,
+          validade: dados.validade?.toDate(),
+          quantidade: Number(dados.quantidade || 0),
+          valor: Number(dados.valor || 0)
+        };
+      });
       
-      // Filtrar produtos fantasmas da lista
-      const listaFiltrada = lista.filter(produto => !produtosFantasmasIds.includes(produto.id));
+      setProdutos(produtosData);
+      setProdutosFiltrados(produtosData);
+      calcularEstatisticas(produtosData);
       
-      if (lista.length !== listaFiltrada.length) {
-        console.log(`Filtrados ${lista.length - listaFiltrada.length} produtos fantasmas da lista`);
+      // Verificar produtos com estoque baixo
+      const produtosBaixos = produtosData.filter(p => p.quantidade < ESTOQUE_MINIMO);
+      if (produtosBaixos.length > 0) {
+        message.warning({
+          content: `${produtosBaixos.length} produtos com estoque crítico!`,
+          icon: <WarningOutlined style={{ color: "#faad14" }} />,
+          duration: 5
+        });
       }
-      
-      console.log(`Carregados ${listaFiltrada.length} produtos do estoque vet`);
-      setProdutos(listaFiltrada);
-      setAtualizarTabs(prev => prev + 1);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
-      message.error("Erro ao carregar produtos: " + (error.message || error));
+      message.error(typeof error.message === 'string' ? `Erro ao carregar produtos: ${error.message}` : "Erro ao carregar produtos");
     } finally {
       setCarregando(false);
     }
-  }, [produtosFantasmasIds]); // Adicionar produtosFantasmasIds como dependência
+  }, [collectionName, calcularEstatisticas]);
 
-  // Função para remover produtos fantasmas da interface
-  const removerProdutoFantasma = useCallback((id) => {
-    console.log('Removendo produto fantasma da interface:', id);
-    
-    // Remover do estado atual
-    setProdutos(produtos => produtos.filter(p => p.id !== id));
-    
-    // Adicionar à lista negra para evitar que reapareça
-    setProdutosFantasmasIds(ids => {
-      if (!ids.includes(id)) {
-        return [...ids, id];
-      }
-      return ids;
-    });
-    
-    message.success('Produto removido da interface e adicionado à lista negra');
-  }, []);
-
-  const removerProduto = useCallback(async (id) => {
-    Modal.confirm({
-      title: "Confirmar exclusão?",
-      content: "Tem certeza de que deseja excluir este produto?",
-      onOk: async () => {
-        try {
-          console.log('Tentando remover produto com ID:', id);
-          console.log('Collection name:', stocks.vet);
-          
-          // Verificar se o ID é válido
-          if (!id) {
-            console.error('ID inválido para exclusão:', id);
-            message.error('ID de produto inválido para exclusão');
-            return;
-          }
-          
-          const docRef = doc(db, stocks.vet, id);
-          console.log('Referência do documento:', docRef.path);
-          
-          // Verificar se o documento existe
-          const docSnap = await getDoc(docRef);
-          
-          if (docSnap.exists()) {
-            const produtoData = docSnap.data();
-            console.log('Produto encontrado para exclusão:', produtoData);
-            
-            // Executar a exclusão
-            await deleteDoc(docRef);
-            
-            // Registrar a operação de remoção
-            await registrarOperacao(
-              currentUser.email,
-              'remocao',
-              produtoData.nome,
-              'Estoque Vet',
-              null,
-              produtoData.quantidade
-            );
-            
-            await carregarProdutos();
-            message.success(`Produto "${produtoData.nome}" excluído com sucesso!`);
-          } else {
-            console.error(`Documento com ID ${id} não encontrado na coleção ${stocks.vet}`);
-            
-            // Verificar se o produto está na interface mas não no banco
-            const produtoInterface = produtos.find(p => p.id === id);
-            if (produtoInterface) {
-              console.log('Produto existe na interface mas não no banco:', produtoInterface);
-              // Perguntar ao usuário se deseja remover da interface
-              Modal.confirm({
-                title: 'Produto não existe no banco de dados',
-                content: `O produto "${produtoInterface.nome}" aparece na interface mas não existe no banco de dados. Deseja removê-lo da interface?`,
-                onOk: () => {
-                  // Remover da interface
-                  removerProdutoFantasma(id);
-                },
-                okText: 'Sim, remover da interface',
-                cancelText: 'Não'
-              });
-            } else {
-              // Tentar recarregar os produtos antes de mostrar o erro
-              await carregarProdutos();
-              message.error(`Produto não encontrado para exclusão. O produto pode já ter sido excluído ou o ID "${id}" não existe.`);
-            }
-          }
-        } catch (error) {
-          console.error('Erro ao remover produto:', error);
-          message.error(`Erro ao excluir produto: ${error.message ? String(error.message) : 'Erro desconhecido'}`);
-          
-          // Tentar recarregar os produtos em caso de erro
-          try {
-            await carregarProdutos();
-          } catch (loadError) {
-            console.error('Erro ao recarregar produtos após falha na exclusão:', loadError);
-          }
-        }
-      },
-    });
-  }, [currentUser.email, carregarProdutos, produtos, removerProdutoFantasma]);
-
-  const editarProduto = useCallback((produto) => {
-    console.log('Editando produto:', produto);
-    
-    // Verificar se o produto tem um ID válido
-    if (!produto || !produto.id) {
-      console.error('Produto sem ID válido:', produto);
-      message.error("Erro ao editar produto: ID do produto não encontrado. Tente recarregar a página.");
-      return;
+  // Carregar produtos ao iniciar
+  useEffect(() => {
+    if (currentUser) {
+      carregarProdutos();
     }
-    
-    setProdutoEditando(produto);
-    form.setFieldsValue({
-      ...produto,
-      validade: produto.validade ? moment(produto.validade) : null
-    });
-    setModalVisible(true);
-  }, [form]);
+  }, [currentUser, carregarProdutos]);
 
-  const salvarProduto = async (values) => {
+  // Funções CRUD
+  const adicionarProduto = async (values) => {
     try {
-      console.log('Salvando produto:', {
-        produtoEditando,
-        values,
-        collectionName: stocks.vet
-      });
-      
-      // Verificação adicional para garantir que o ID do produto existe
-      if (produtoEditando && !produtoEditando.id) {
-        console.error('ID do produto inválido ao salvar:', produtoEditando);
-        message.error("Erro ao atualizar produto: ID do produto não encontrado");
-        return;
-      }
-      
+      setCarregando(true);
       const dados = {
         ...values,
         validade: values.validade?.toDate(),
         quantidade: Number(values.quantidade),
         valor: Number(values.valor),
         userId: currentUser.uid,
+        createdAt: new Date(),
         updatedAt: new Date()
       };
 
-      if (produtoEditando) {
-        console.log('Tentando atualizar produto:', {
-          produtoId: produtoEditando.id,
-          collectionName: stocks.vet,
-          produtoEditando
-        });
-        
-        const docRef = doc(db, stocks.vet, produtoEditando.id);
-        console.log('Referência do documento:', docRef.path);
-        const docSnap = await getDoc(docRef);
-        console.log('Documento existe?', docSnap.exists(), 'ID do documento:', produtoEditando.id);
-
-        if (docSnap.exists()) {
-          await updateDoc(docRef, dados);
-          
-          // Registrar a operação de atualização
-          await registrarOperacao(
-            currentUser.email,
-            'atualizacao',
-            dados.nome,
-            'Estoque Vet',
-            null,
-            dados.quantidade,
-            { valorUnitario: dados.valor }
-          );
-          
-          message.success("Produto atualizado!");
-        } else {
-          console.error('Documento não encontrado:', {
-            collectionName: stocks.vet, 
-            id: produtoEditando.id,
-            todosIds: produtos.map(p => p.id)
-          });
-          message.error("Produto não encontrado para atualização.");
+      await addDoc(collection(db, collectionName), dados);
+      await registrarOperacao(
+        currentUser.email,
+        'adicao',
+        values.nome,
+        'Estoque Vet',
+        null,
+        values.quantidade,
+        {
+          categoria: values.categoria,
+          valor: values.valor,
+          validade: values.validade ? moment(values.validade).format('DD/MM/YYYY') : 'N/A'
         }
-      } else {
-        const docRef = await addDoc(collection(db, stocks.vet), { ...dados, createdAt: new Date() });
-        
-        // Registrar a operação de adição
-        await registrarOperacao(
-          currentUser.email,
-          'adicao',
-          dados.nome,
-          'Estoque Vet',
-          null,
-          dados.quantidade,
-          { valorUnitario: dados.valor, id: docRef.id }
-        );
-        
-        message.success("Produto adicionado!");
+      );
+      
+      message.success("Produto adicionado com sucesso!");
+      await carregarProdutos();
+      setModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      console.error('Erro ao adicionar produto:', error);
+      message.error(typeof error.message === 'string' ? `Erro ao adicionar produto: ${error.message}` : "Erro ao adicionar produto");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const editarProduto = (produto) => {
+    setProdutoEditando(produto);
+    form.setFieldsValue({
+      ...produto,
+      validade: produto.validade ? moment(produto.validade) : null
+    });
+    setModalVisible(true);
+  };
+
+  const atualizarProduto = async (values) => {
+    try {
+      if (!produtoEditando || !produtoEditando.id) {
+        message.error("ID do produto não encontrado!");
+        return;
       }
+      
+      setCarregando(true);
+      const dados = {
+        ...values,
+        validade: values.validade?.toDate(),
+        quantidade: Number(values.quantidade),
+        valor: Number(values.valor),
+        updatedAt: new Date()
+      };
+      
+      const docRef = doc(db, collectionName, produtoEditando.id);
+      await updateDoc(docRef, dados);
+      
+      await registrarOperacao(
+        currentUser.email,
+        'atualizacao',
+        produtoEditando.nome,
+        'Estoque Vet',
+        null,
+        produtoEditando.quantidade,
+        {
+          categoria: produtoEditando.categoria,
+          valor: produtoEditando.valor,
+          validade: produtoEditando.validade ? moment(produtoEditando.validade).format('DD/MM/YYYY') : 'N/A'
+        }
+      );
+      
+      message.success("Produto atualizado com sucesso!");
       await carregarProdutos();
       setModalVisible(false);
       setProdutoEditando(null);
       form.resetFields();
     } catch (error) {
-      message.error("Erro ao salvar");
+      console.error('Erro ao atualizar produto:', error);
+      message.error(typeof error.message === 'string' ? `Erro ao atualizar produto: ${error.message}` : "Erro ao atualizar produto");
+    } finally {
+      setCarregando(false);
     }
   };
 
+  const excluirProduto = async (id) => {
+    try {
+      setCarregando(true);
+      console.log("Tentando excluir produto com ID:", id);
+      console.log("Lista de produtos disponíveis:", produtos.map(p => ({ id: p.id, nome: p.nome })));
+      
+      // Convertendo ambos os IDs para string para garantir uma comparação consistente
+      const produtoParaExcluir = produtos.find(p => String(p.id) === String(id));
+      
+      if (!produtoParaExcluir) {
+        console.error(`Produto com ID ${id} não encontrado na lista de produtos.`);
+        message.error(`Produto com ID ${id} não encontrado para exclusão. Tente recarregar a página.`);
+        return;
+      }
+      
+      console.log("Produto encontrado para exclusão:", produtoParaExcluir);
+      const docRef = doc(db, collectionName, id);
+      await deleteDoc(docRef);
+      
+      await registrarOperacao(
+        currentUser.email,
+        'remocao',
+        produtoParaExcluir.nome,
+        'Estoque Vet',
+        null,
+        produtoParaExcluir.quantidade,
+        {
+          categoria: produtoParaExcluir.categoria,
+          id: id
+        }
+      );
+      
+      message.success(`Produto "${produtoParaExcluir.nome}" excluído com sucesso!`);
+      await carregarProdutos();
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      message.error(typeof error.message === 'string' ? `Erro ao excluir produto: ${error.message}` : "Erro ao excluir produto");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  // Submeter formulário
+  const handleSubmit = (values) => {
+    if (produtoEditando) {
+      atualizarProduto(values);
+    } else {
+      adicionarProduto(values);
+    }
+  };
+
+  // Ver detalhes do produto
+  const verDetalhesProduto = (produto) => {
+    setProdutoSelecionado(produto);
+    setDrawerDetalhesVisible(true);
+  };
+
+  // Componente para status de quantidade
+  const StatusQuantidade = ({ quantidade }) => {
+    if (quantidade <= ESTOQUE_MINIMO) {
+      return <Tag color="error">Crítico</Tag>;
+    } else if (quantidade <= ESTOQUE_BAIXO) {
+      return <Tag color="warning">Baixo</Tag>;
+    }
+    return <Tag color="success">Normal</Tag>;
+  };
+
+  // Configuração para os gráficos
   const { dadosGrafico, opcoesGrafico } = useMemo(() => {
     const categorias = Object.keys(CORES_POR_CATEGORIA);
     const dados = categorias.map(categoria =>
       produtos.filter(p => p.categoria === categoria).reduce((sum, p) => sum + p.quantidade, 0)
     );
+    
     return {
       dadosGrafico: {
         labels: categorias,
@@ -418,7 +463,7 @@ function EstoqueVet() {
           data: dados,
           backgroundColor: categorias.map(c => CORES_POR_CATEGORIA[c]),
           borderColor: "#ffffff",
-          borderWidth: 2,
+          borderWidth: 1,
           borderRadius: 4,
           barThickness: 50
         }]
@@ -428,284 +473,146 @@ function EstoqueVet() {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} unidades` } }
+          tooltip: { 
+            callbacks: { 
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} unidades` 
+            }
+          }
         },
         scales: {
-          y: { beginAtZero: true, ticks: { precision: 0, color: "#666" }, grid: { color: "#f0f0f0" } },
-          x: { ticks: { color: "#444", font: { weight: "bold" } }, grid: { display: false } }
+          y: { 
+            beginAtZero: true, 
+            ticks: { precision: 0, color: "#666" }, 
+            grid: { color: "#f0f0f0" } 
+          },
+          x: { 
+            ticks: { color: "#444", font: { weight: "bold" } }, 
+            grid: { display: false } 
+          }
         }
       }
     };
   }, [produtos, CORES_POR_CATEGORIA]);
 
-  // eslint-disable-next-line no-unused-vars
-  const abrirModalAdicionarLeva = () => {
-    // Preparar a lista de produtos existentes para seleção
-    const produtosUnicos = Array.from(new Map(produtos.map(p => [p.nome, p])).values());
-    setProdutosSelecionaveis(produtosUnicos.map(p => ({
-      label: `${p.nome} (${p.categoria})`,
-      value: p.id,
-      produto: p
-    })));
-    setModalLevaVisible(true);
-  };
-
-  const handleSelecionarProdutoLeva = (produtoId) => {
-    const produtoSelecionado = produtosSelecionaveis.find(p => p.value === produtoId);
-    if (produtoSelecionado) {
-      setProdutoSelecionadoLeva(produtoSelecionado.produto);
-      // Preencher alguns campos do formulário com dados do produto
-      formLeva.setFieldsValue({
-        nome: produtoSelecionado.produto.nome,
-        categoria: produtoSelecionado.produto.categoria,
-        tipoQuantidade: produtoSelecionado.produto.tipoQuantidade,
-        fornecedor: produtoSelecionado.produto.fornecedor,
-        valor: produtoSelecionado.produto.valor
-      });
-    }
-  };
-
-  const salvarNovaLeva = async (values) => {
-    try {
-      if (!produtoSelecionadoLeva) {
-        message.error("Selecione um produto para adicionar leva");
-        return;
-      }
-
-      const dados = {
-        nome: produtoSelecionadoLeva.nome,
-        categoria: produtoSelecionadoLeva.categoria,
-        tipoQuantidade: produtoSelecionadoLeva.tipoQuantidade,
-        fornecedor: values.fornecedor,
-        valor: Number(values.valor),
-        quantidade: Number(values.quantidade),
-        validade: values.validade?.toDate(),
-        userId: currentUser.uid,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      const docRef = await addDoc(collection(db, stocks.vet), dados);
-      
-      // Registrar a operação de adição de leva
-      await registrarOperacao(
-        currentUser.email,
-        'adicao_leva',
-        dados.nome,
-        'Estoque Vet',
-        null,
-        dados.quantidade,
-        { valorUnitario: dados.valor, id: docRef.id }
-      );
-      
-      message.success("Nova leva adicionada com sucesso!");
-      await carregarProdutos();
-      setModalLevaVisible(false);
-      formLeva.resetFields();
-      setProdutoSelecionadoLeva(null);
-    } catch (error) {
-      message.error("Erro ao adicionar leva");
-    }
-  };
-
-  const handleBusca = (valor) => {
-    setBusca(valor);
-  };
-
-  const toggleFiltro = () => {
-    setFiltroVisivel(!filtroVisivel);
-  };
-
-  const toggleGrafico = () => {
-    setExibirGrafico(!exibirGrafico);
-  };
-
-  // Adicionar hook para detectar tamanho da tela
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
-  // Detectar mudanças no tamanho da tela
-  useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const produtosFiltradosEOrdenados = useMemo(() => {
-    const produtosFiltrados = produtos.filter(produto => {
-      if (busca && !produto.nome.toLowerCase().includes(busca.toLowerCase())) {
-        return false;
-      }
-      
-      if (filtros.nome && !produto.nome.toLowerCase().includes(filtros.nome.toLowerCase())) {
-        return false;
-      }
-      
-      if (filtros.fornecedor && (!produto.fornecedor || !produto.fornecedor.toLowerCase().includes(filtros.fornecedor.toLowerCase()))) {
-        return false;
-      }
-      
-      if (filtros.precoMin !== "" && Number(produto.valor) < Number(filtros.precoMin)) {
-        return false;
-      }
-      
-      if (filtros.precoMax !== "" && Number(produto.valor) > Number(filtros.precoMax)) {
-        return false;
-      }
-      
-      if (filtros.quantidadeMin !== "" && Number(produto.quantidade) < Number(filtros.quantidadeMin)) {
-        return false;
-      }
-      
-      if (filtros.quantidadeMax !== "" && Number(produto.quantidade) > Number(filtros.quantidadeMax)) {
-        return false;
-      }
-      
-      if (filtros.validadeInicio && produto.validade && moment(produto.validade).isBefore(filtros.validadeInicio, 'day')) {
-        return false;
-      }
-      
-      if (filtros.validadeFim && produto.validade && moment(produto.validade).isAfter(filtros.validadeFim, 'day')) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    if (filtros.validadeOrdem) {
-      produtosFiltrados.sort((a, b) => {
+  // Renderizar tabela de produtos
+  const colunas = [
+    {
+      title: "Nome",
+      dataIndex: "nome",
+      key: "nome",
+      render: (text, record) => (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div 
+            style={{ 
+              backgroundColor: CORES_POR_CATEGORIA[record.categoria] || '#ccc', 
+              width: '8px', 
+              height: '8px', 
+              borderRadius: '50%', 
+              marginRight: '8px'
+            }} 
+          />
+          <span>{text}</span>
+        </div>
+      ),
+      sorter: (a, b) => a.nome.localeCompare(b.nome)
+    },
+    {
+      title: "Categoria",
+      dataIndex: "categoria",
+      key: "categoria",
+      render: (text) => (
+        <Tag color={CORES_POR_CATEGORIA[text] || '#ccc'} style={{ fontWeight: 500 }}>
+          {CATEGORIA_ICONS[text]} {text}
+        </Tag>
+      ),
+      filters: Object.keys(CORES_POR_CATEGORIA).map(cat => ({ text: cat, value: cat })),
+      onFilter: (value, record) => record.categoria === value
+    },
+    {
+      title: "Quantidade",
+      dataIndex: "quantidade",
+      key: "quantidade",
+      render: (text) => (
+        <span style={{ fontWeight: 500 }}>{text}</span>
+      ),
+      sorter: (a, b) => a.quantidade - b.quantidade
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (_, record) => <StatusQuantidade quantidade={record.quantidade} />
+    },
+    {
+      title: "Preço (R$)",
+      dataIndex: "valor",
+      key: "valor",
+      render: (text) => (
+        <span>R$ {Number(text).toFixed(2)}</span>
+      ),
+      sorter: (a, b) => a.valor - b.valor
+    },
+    {
+      title: "Validade",
+      dataIndex: "validade",
+      key: "validade",
+      render: (date) => date ? moment(date).format("DD/MM/YYYY") : "-",
+      sorter: (a, b) => {
         if (!a.validade) return 1;
         if (!b.validade) return -1;
-        
-        if (filtros.validadeOrdem === 'asc') {
-          return moment(a.validade).diff(moment(b.validade));
-        } else {
-          return moment(b.validade).diff(moment(a.validade));
-        }
-      });
-    }
-    
-    return produtosFiltrados;
-  }, [produtos, busca, filtros]);
-
-  const colunas = useMemo(() => {
-    // Colunas base que serão exibidas em todos os tamanhos de tela
-    const baseColumns = [
-      { 
-        title: "Nome", 
-        dataIndex: "nome",
-        ellipsis: screenWidth < 768, // Truncar texto em dispositivos móveis
-        sorter: (a, b) => a.nome.localeCompare(b.nome)
-      },
-      { 
-        title: "Quantidade", 
-        dataIndex: "quantidade",
-        align: 'center',
-        render: (quantidade, record) => (
-          <span style={{ 
-            color: Number(quantidade) <= 5 ? 'red' : 'inherit',
-            fontWeight: Number(quantidade) <= 5 ? 'bold' : 'normal'
-          }}>
-            {quantidade} {record.tipoQuantidade}
-          </span>
-        )
-      },
-    ];
-
-    // Colunas para telas médias (tablets)
-    const mediumScreenColumns = [
-      { 
-        title: "Categoria", 
-        dataIndex: "categoria",
-        ellipsis: screenWidth < 1200,
-        filters: [...new Set(produtos.map(p => p.categoria))].map(cat => ({
-          text: cat,
-          value: cat
-        })),
-        onFilter: (value, record) => record.categoria === value
-      },
-      { 
-        title: "Validade", 
-        dataIndex: "validade", 
-        render: val => (val ? moment(val).format("DD/MM/YYYY") : "-"),
-        sorter: (a, b) => {
-          if (!a.validade) return 1;
-          if (!b.validade) return -1;
-          return moment(a.validade).diff(moment(b.validade));
-        }
-      },
-    ];
-
-    // Colunas para telas grandes (desktop)
-    const largeScreenColumns = [
-      { title: "Tipo", dataIndex: "tipoQuantidade" },
-      { 
-        title: "Fornecedor", 
-        dataIndex: "fornecedor",
-        ellipsis: true
-      },
-      { 
-        title: "Preço (R$)", 
-        dataIndex: "valor", 
-        render: val => `R$ ${Number(val).toFixed(2)}`,
-        sorter: (a, b) => a.valor - b.valor
-      },
-    ];
-
-    // Coluna de ações sempre presente
-    const actionsColumn = {
+        return moment(a.validade).diff(moment(b.validade));
+      }
+    },
+    {
       title: "Ações",
-      width: screenWidth < 576 ? 80 : 120,
+      key: "acoes",
       render: (_, record) => (
-        <div className="acoes-container">
-          <Button 
-            icon={<EditOutlined />} 
-            onClick={() => editarProduto(record)}
-            size={screenWidth < 576 ? "small" : "middle"} 
-          />
-          <Button 
-            icon={<DeleteOutlined />} 
-            onClick={() => removerProduto(record.id)} 
-            danger
-            size={screenWidth < 576 ? "small" : "middle"}
-          />
-        </div>
+        <Space size="small">
+          <Tooltip title="Ver detalhes">
+            <Button 
+              icon={<EyeOutlined />} 
+              onClick={() => verDetalhesProduto(record)}
+              type="text" 
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="Editar">
+            <Button 
+              icon={<EditOutlined />} 
+              onClick={() => editarProduto(record)}
+              type="text" 
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="Excluir">
+            <Popconfirm
+              title="Tem certeza que deseja excluir este produto?"
+              onConfirm={() => excluirProduto(record.id)}
+              okText="Sim"
+              cancelText="Não"
+            >
+              <Button 
+                icon={<DeleteOutlined />} 
+                type="text" 
+                danger 
+                size="small"
+              />
+            </Popconfirm>
+          </Tooltip>
+        </Space>
       )
-    };
+    }
+  ];
 
-    // Construir conjunto de colunas baseado no tamanho da tela
-    let columns = [...baseColumns];
-    
-    if (screenWidth >= 768) {
-      columns = [...columns, ...mediumScreenColumns];
-    }
-    
-    if (screenWidth >= 992) {
-      columns = [...columns, ...largeScreenColumns];
-    }
-    
-    columns.push(actionsColumn);
-    
-    return columns;
-  }, [screenWidth, produtos, editarProduto, removerProduto]);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login");
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-      message.error(typeof error.message === 'string' ? `Erro ao fazer logout: ${error.message}` : "Erro ao fazer logout");
-    }
+  // Renderização principal
+  const handleOpenTransferencia = () => {
+    setTransferenciaModalVisible(true);
   };
 
-  useEffect(() => {
-    if (currentUser) carregarProdutos();
-  }, [currentUser, carregarProdutos]);
+  const handleCloseTransferencia = () => {
+    setTransferenciaModalVisible(false);
+    // Recarregar produtos após fechar o modal de transferência
+    carregarProdutos();
+  };
 
   return (
     <div className="estoque-container">
@@ -713,8 +620,8 @@ function EstoqueVet() {
         <div className="header">
           <div className="header-content">
             <div className="header-title">
-              <span className="logo"><MedicineBoxOutlined /></span>
-              <h1>Estoque Veterinário</h1>
+              <span className="logo"><InboxOutlined /></span>
+              <h1>Estoque Vet</h1>
             </div>
             <div className="header-actions">
               <Button
@@ -726,7 +633,7 @@ function EstoqueVet() {
               <Button
                 type="text"
                 icon={<LogoutOutlined />}
-                onClick={handleLogout}
+                onClick={logout}
                 style={{ color: "white" }}
               >
                 Sair
@@ -739,275 +646,278 @@ function EstoqueVet() {
           <Button 
             type="primary" 
             icon={<PlusOutlined />} 
-            onClick={() => setModalVisible(true)}>
+            onClick={() => {
+              setProdutoEditando(null);
+              form.resetFields();
+              setModalVisible(true);
+            }}>
             Adicionar Produto
           </Button>
           <Button 
-            icon={<SwapOutlined />} 
-            onClick={() => setShowTransfer(true)}>
-            Transferência
+            icon={<ReloadOutlined />} 
+            onClick={carregarProdutos}>
+            Atualizar
           </Button>
           <Button 
             icon={<FilterOutlined />} 
-            onClick={toggleFiltro}>
-            {filtroVisivel ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+            onClick={() => setFiltroAvancado(!filtroAvancado)}>
+            {filtroAvancado ? 'Ocultar Filtros' : 'Mostrar Filtros'}
           </Button>
           <Button 
-            icon={exibirGrafico ? <BarsOutlined /> : <AreaChartOutlined />} 
-            onClick={toggleGrafico}>
-            {exibirGrafico ? 'Ocultar Gráfico' : 'Mostrar Gráfico'}
+            icon={<EyeOutlined />}
+            onClick={() => setMostrarGrafico(!mostrarGrafico)}>
+            {mostrarGrafico ? 'Ocultar Gráfico' : 'Mostrar Gráfico'}
           </Button>
           <Button 
-            icon={<ReloadOutlined />} 
-            onClick={() => {
-              setCarregando(true);
-              carregarProdutos();
-            }}>
-            Atualizar
+            icon={<SwapOutlined />}
+            onClick={handleOpenTransferencia}>
+            Transferir
           </Button>
         </div>
       </div>
 
       <div className="control-bar">
         <div className="search-area">
-          <div className="search-container">
-            <Input.Search
-              placeholder="Buscar por nome, código, fornecedor..."
+          <div className="search-container" style={{ display: 'flex', width: '100%' }}>
+            <AutoComplete
+              style={{ flex: 1 }}
               value={busca}
-              onChange={(e) => handleBusca(e.target.value)}
-              onSearch={handleBusca}
-              style={{ width: '100%' }}
+              onChange={(value) => setBusca(value)}
+              options={getSugestoesBusca().map((sugestao) => ({ value: sugestao }))}
+              onSelect={(value) => handleBusca(value)}
+              placeholder="Buscar por nome, código, fornecedor..."
               size="large"
             />
+            <Button 
+              type="primary" 
+              icon={<SearchOutlined />} 
+              onClick={() => handleBusca(busca)}
+              style={{ marginLeft: 8 }}
+              size="large"
+            >
+              Buscar
+            </Button>
           </div>
         </div>
       </div>
 
       <div className="main-content">
-        {filtroVisivel && (
+        {/* Filtros avançados */}
+        {filtroAvancado && (
           <div className="filters-panel">
-            <h3>Filtros Avançados</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 16 }}>Filtros Avançados</h3>
             <div className="filters-grid">
               <Form layout="vertical">
                 <Form.Item label="Nome do Produto">
                   <Input
-                    placeholder="Nome"
+                    placeholder="Buscar por nome"
                     value={filtros.nome}
-                    onChange={(e) => setFiltros({ ...filtros, nome: e.target.value })}
+                    onChange={(e) => setFiltros({...filtros, nome: e.target.value})}
                   />
                 </Form.Item>
+              </Form>
+              <Form layout="vertical">
                 <Form.Item label="Fornecedor">
                   <Input
-                    placeholder="Fornecedor"
+                    placeholder="Buscar por fornecedor"
                     value={filtros.fornecedor}
-                    onChange={(e) => setFiltros({ ...filtros, fornecedor: e.target.value })}
+                    onChange={(e) => setFiltros({...filtros, fornecedor: e.target.value})}
                   />
                 </Form.Item>
-                <Form.Item label="Preço Mínimo">
+              </Form>
+              <Form layout="vertical">
+                <Form.Item label="Preço Mínimo (R$)">
                   <Input
                     type="number"
-                    placeholder="Preço Mínimo"
+                    placeholder="Preço mínimo"
                     value={filtros.precoMin}
-                    onChange={(e) => setFiltros({ ...filtros, precoMin: e.target.value })}
+                    onChange={(e) => setFiltros({...filtros, precoMin: e.target.value})}
                   />
                 </Form.Item>
-                <Form.Item label="Preço Máximo">
+              </Form>
+              <Form layout="vertical">
+                <Form.Item label="Preço Máximo (R$)">
                   <Input
                     type="number"
-                    placeholder="Preço Máximo"
+                    placeholder="Preço máximo"
                     value={filtros.precoMax}
-                    onChange={(e) => setFiltros({ ...filtros, precoMax: e.target.value })}
+                    onChange={(e) => setFiltros({...filtros, precoMax: e.target.value})}
                   />
                 </Form.Item>
+              </Form>
+              <Form layout="vertical">
                 <Form.Item label="Quantidade Mínima">
                   <Input
                     type="number"
-                    placeholder="Quantidade Mínima"
+                    placeholder="Quantidade mínima"
                     value={filtros.quantidadeMin}
-                    onChange={(e) => setFiltros({ ...filtros, quantidadeMin: e.target.value })}
+                    onChange={(e) => setFiltros({...filtros, quantidadeMin: e.target.value})}
                   />
                 </Form.Item>
+              </Form>
+              <Form layout="vertical">
                 <Form.Item label="Quantidade Máxima">
                   <Input
                     type="number"
-                    placeholder="Quantidade Máxima"
+                    placeholder="Quantidade máxima"
                     value={filtros.quantidadeMax}
-                    onChange={(e) => setFiltros({ ...filtros, quantidadeMax: e.target.value })}
+                    onChange={(e) => setFiltros({...filtros, quantidadeMax: e.target.value})}
                   />
                 </Form.Item>
-                <Form.Item label="Ordenar Validade">
+              </Form>
+              <Form layout="vertical">
+                <Form.Item label="Ordenar por Validade">
                   <Select
-                    placeholder="Ordenar por"
+                    placeholder="Selecione a ordem"
                     value={filtros.validadeOrdem}
-                    onChange={(value) => setFiltros({ ...filtros, validadeOrdem: value })}
-                    style={{ width: '100%' }}
+                    onChange={(value) => setFiltros({...filtros, validadeOrdem: value})}
+                    allowClear
                   >
-                    <Select.Option value="asc">Mais Próximas</Select.Option>
-                    <Select.Option value="desc">Mais Distantes</Select.Option>
+                    <Select.Option value="asc">Do mais antigo ao mais recente</Select.Option>
+                    <Select.Option value="desc">Do mais recente ao mais antigo</Select.Option>
                   </Select>
                 </Form.Item>
-                <Form.Item label="Validade Entre">
-                  <DatePicker
-                    placeholder="Data Inicial"
-                    value={filtros.validadeInicio ? moment(filtros.validadeInicio) : null}
-                    onChange={(date) => setFiltros({ ...filtros, validadeInicio: date ? date.toDate() : null })}
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
-                <Form.Item label=" ">
-                  <DatePicker
-                    placeholder="Data Final"
-                    value={filtros.validadeFim ? moment(filtros.validadeFim) : null}
-                    onChange={(date) => setFiltros({ ...filtros, validadeFim: date ? date.toDate() : null })}
-                    style={{ width: '100%' }}
+              </Form>
+              <Form layout="vertical">
+                <Form.Item label="Período de Validade">
+                  <DatePicker.RangePicker
+                    format="DD/MM/YYYY"
+                    placeholder={["Data inicial", "Data final"]}
+                    value={[filtros.validadeInicio, filtros.validadeFim]}
+                    onChange={(dates) => {
+                      setFiltros({
+                        ...filtros, 
+                        validadeInicio: dates ? dates[0] : null,
+                        validadeFim: dates ? dates[1] : null
+                      });
+                    }}
+                    style={{ width: "100%" }}
                   />
                 </Form.Item>
               </Form>
             </div>
             <div className="filters-actions">
-              <Button type="primary" onClick={aplicarFiltros}>
+              <Button 
+                onClick={() => {
+                  aplicarFiltros(busca, filtros, produtos, categoriaAtiva);
+                }}
+                type="primary"
+              >
                 Aplicar Filtros
               </Button>
-              <Button onClick={limparFiltros}>
+              <Button 
+                onClick={limparFiltros}
+              >
                 Limpar Filtros
               </Button>
             </div>
           </div>
         )}
 
-        {exibirGrafico && (
-          <div className="dashboard-grid">
-            <div className="dashboard-card">
-              <div className="card-header">
-                <div>
-                  <h3 className="card-title">Total de Produtos</h3>
-                  <p className="card-value">{produtos.length}</p>
-                </div>
-                <div className="card-icon blue">
-                  <InboxOutlined />
-                </div>
+        {/* Cards resumo */}
+        <div className="dashboard-grid">
+          <div className="dashboard-card">
+            <div className="card-header">
+              <div>
+                <h3 className="card-title">Total de Produtos</h3>
+                <div className="card-value">{estatisticas.total}</div>
               </div>
-            </div>
-            <div className="dashboard-card">
-              <div className="card-header">
-                <div>
-                  <h3 className="card-title">Valor Total do Estoque</h3>
-                  <p className="card-value">
-                    {produtos
-                      .reduce((total, produto) => total + produto.preco * produto.quantidade, 0)
-                      .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </p>
-                </div>
-                <div className="card-icon green">
-                  <CoffeeOutlined />
-                </div>
-              </div>
-            </div>
-            <div className="dashboard-card">
-              <div className="card-header">
-                <div>
-                  <h3 className="card-title">Produtos com Baixo Estoque</h3>
-                  <p className="card-value">
-                    {produtos.filter(produto => produto.quantidade < produto.estoqueMinimo).length}
-                  </p>
-                </div>
-                <div className="card-icon orange">
-                  <WarningOutlined />
-                </div>
-              </div>
-            </div>
-            <div className="dashboard-card">
-              <div className="card-header">
-                <div>
-                  <h3 className="card-title">Produtos a Vencer (30 dias)</h3>
-                  <p className="card-value">
-                    {produtos.filter(produto => {
-                      if (!produto.validade) return false;
-                      const validade = produto.validade.toDate ? produto.validade.toDate() : new Date(produto.validade);
-                      const hoje = new Date();
-                      const dias = Math.floor((validade - hoje) / (1000 * 60 * 60 * 24));
-                      return dias >= 0 && dias <= 30;
-                    }).length}
-                  </p>
-                </div>
-                <div className="card-icon red">
-                  <MedicineBoxOutlined />
-                </div>
+              <div className="card-icon blue">
+                <InboxOutlined />
               </div>
             </div>
           </div>
-        )}
-
-        {exibirGrafico && (
-          <div className="chart-container">
-            <div className="chart-header">
-              <h3 className="chart-title">Distribuição de Produtos por Categoria</h3>
-              <div className="chart-legend">
-                {Object.entries(CORES_POR_CATEGORIA).map(([categoria, cor]) => (
-                  <div key={categoria} className="legend-item">
-                    <div className="legend-color" style={{ backgroundColor: cor }} />
-                    <span>{categoria}</span>
-                  </div>
-                ))}
+          <div className="dashboard-card">
+            <div className="card-header">
+              <div>
+                <h3 className="card-title">Estoque Crítico</h3>
+                <div className="card-value">{estatisticas.estoqueBaixo}</div>
+              </div>
+              <div className="card-icon red">
+                <WarningOutlined />
               </div>
             </div>
-            <div className="chart-wrapper">
-              <Bar data={dadosGrafico} options={opcoesGrafico} />
+          </div>
+          <div className="dashboard-card">
+            <div className="card-header">
+              <div>
+                <h3 className="card-title">Valor Total em Estoque</h3>
+                <div className="card-value">R$ {estatisticas.valorTotal.toFixed(2)}</div>
+              </div>
+              <div className="card-icon green">
+                <span>R$</span>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Gráfico */}
+        {mostrarGrafico && (
+        <div className="chart-container">
+          <div className="chart-header">
+            <h3 className="chart-title">Estoque por Categoria</h3>
+            <div className="chart-legend">
+              {Object.entries(CORES_POR_CATEGORIA).map(([categoria, cor]) => (
+                <div className="legend-item" key={categoria}>
+                  <div 
+                    className="legend-color" 
+                    style={{ backgroundColor: cor }}
+                  />
+                  <span>{categoria}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="chart-wrapper">
+            <Bar data={dadosGrafico} options={opcoesGrafico} />
+          </div>
+        </div>
         )}
 
+        {/* Tabela de produtos */}
         <div className="table-container">
           <div className="table-header">
-            <h3 className="table-title">Lista de Produtos</h3>
+            <h3 className="table-title">
+              Lista de Produtos
+              {busca && <small style={{ marginLeft: 10 }}>Resultados para: {busca}</small>}
+            </h3>
+            <div className="table-actions">
+              <Badge 
+                count={produtosFiltrados.length} 
+                showZero 
+                style={{ backgroundColor: CORES_POR_CATEGORIA.Medicamentos }}
+              >
+                <span style={{ marginRight: 8 }}>Resultados</span>
+              </Badge>
+            </div>
           </div>
-          <Table 
-            dataSource={produtosFiltradosEOrdenados} 
-            columns={colunas} 
-            rowKey="id" 
+          
+          <Table
+            columns={colunas}
+            dataSource={produtosFiltrados}
+            rowKey="id"
             loading={carregando}
-            pagination={{ 
-              pageSize: screenWidth < 768 ? 8 : 10,
-              showSizeChanger: screenWidth >= 768,
-              showQuickJumper: screenWidth >= 992,
-              size: screenWidth < 768 ? "small" : "default"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} itens`
             }}
-            size={screenWidth < 768 ? "small" : "middle"}
-            scroll={{ x: 'max-content' }}
-            summary={pageData => {
-              let totalQuantidade = 0;
-              let totalValor = 0;
-
-              pageData.forEach(({ quantidade, valor }) => {
-                totalQuantidade += Number(quantidade);
-                totalValor += Number(valor) * Number(quantidade);
-              });
-
-              return (
-                <>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={screenWidth < 768 ? 1 : 2}>
-                      <strong>Total</strong>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1}>
-                      <strong>{totalQuantidade}</strong>
-                    </Table.Summary.Cell>
-                    {screenWidth >= 992 && (
-                      <Table.Summary.Cell index={2} colSpan={screenWidth >= 1200 ? 3 : 2}>
-                        <strong>Valor Total: R$ {totalValor.toFixed(2)}</strong>
-                      </Table.Summary.Cell>
-                    )}
-                  </Table.Summary.Row>
-                </>
-              );
+            locale={{
+              emptyText: (
+                <Empty 
+                  image={Empty.PRESENTED_IMAGE_SIMPLE} 
+                  description="Nenhum produto encontrado"
+                />
+              )
             }}
           />
         </div>
       </div>
 
-      {/* Manter os modais existentes */}
+      {/* Modal de adicionar/editar produto */}
       <Modal
-        title={produtoEditando ? "Editar Produto" : "Adicionar Produto"}
+        title={produtoEditando ? "Editar Produto" : "Novo Produto"}
         open={modalVisible}
         onCancel={() => {
           setModalVisible(false);
@@ -1015,170 +925,217 @@ function EstoqueVet() {
           form.resetFields();
         }}
         footer={null}
+        width={700}
       >
-        <Form form={form} onFinish={salvarProduto} layout="vertical">
-          <Row gutter={16}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="nome" label="Nome do Produto" rules={[{ required: true, message: "Campo obrigatório!" }]}>
-                <Input placeholder="Ex: Seringa 10ml" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="categoria" label="Categoria" rules={[{ required: true, message: "Selecione uma categoria!" }]}>
-                <Select placeholder="Selecione...">
-                  <Select.Option value="Medicamentos">Medicamentos</Select.Option>
-                  <Select.Option value="Insumos">Insumos</Select.Option>
-                  <Select.Option value="Comida">Comida</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="tipoQuantidade" label="Tipo de Quantidade" rules={[{ required: true, message: "Selecione o tipo de quantidade!" }]}>
-                <Select placeholder="Selecione...">
-                  <Select.Option value="unitario">Unitário</Select.Option>
-                  <Select.Option value="pacotes">Pacotes</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="quantidade" label="Quantidade em Estoque" rules={[{ required: true, message: "Campo obrigatório!" }]}>
-                <Input type="number" min={0} placeholder="Ex: 100" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="valor" label="Preço Unitário (R$)" rules={[{ required: true, message: "Campo obrigatório!" }]}>
-                <Input type="number" min={0} step={0.01} placeholder="Ex: 12.50" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="validade" label="Data de Validade" rules={[{ required: true, message: "Selecione uma data!" }]}>
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  disabledDate={current => current && current < moment().startOf("day")}
-                  style={{ width: "100%" }}
-                  placeholder="Selecione a data"
-                  inputReadOnly={true}
-                  className="date-picker-mobile"
-                  popupClassName="date-picker-popup-mobile"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="fornecedor" label="Fornecedor" rules={[{ required: true, message: "Informe o fornecedor!" }]}>
-                <Input placeholder="Ex: Distribuidora Médica ABC" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={24} style={{ textAlign: 'right', marginTop: 16 }}>
-              <Button 
-                onClick={() => {
-                  setModalVisible(false);
-                  setProdutoEditando(null);
-                  form.resetFields();
-                }} 
-                style={{ marginRight: 8 }}
-              >
-                Cancelar
-              </Button>
-              <Button type="primary" onClick={() => form.submit()}>
-                {produtoEditando ? "Atualizar" : "Adicionar"} Produto
-              </Button>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="Adicionar Nova Leva"
-        open={modalLevaVisible}
-        onCancel={() => {
-          setModalLevaVisible(false);
-          setProdutoSelecionadoLeva(null);
-          formLeva.resetFields();
-        }}
-        footer={null}
-      >
-        <Form form={formLeva} onFinish={salvarNovaLeva} layout="vertical">
-          <Form.Item 
-            name="produtoId" 
-            label="Selecione o Produto" 
-            rules={[{ required: true, message: "Selecione um produto!" }]}
-          >
-            <Select 
-              placeholder="Selecione um produto existente" 
-              options={produtosSelecionaveis}
-              onChange={handleSelecionarProdutoLeva}
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-            />
-          </Form.Item>
-          
-          {produtoSelecionadoLeva && (
-            <div className="info-produto-selecionado">
-              <p><strong>Produto:</strong> {produtoSelecionadoLeva.nome}</p>
-              <p><strong>Categoria:</strong> {produtoSelecionadoLeva.categoria}</p>
-              <p><strong>Tipo:</strong> {produtoSelecionadoLeva.tipoQuantidade}</p>
-            </div>
-          )}
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="quantidade" label="Quantidade da Nova Leva" rules={[{ required: true, message: "Informe a quantidade!" }]}>
-                <Input type="number" min={1} placeholder="Ex: 100" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="valor" label="Preço Unitário (R$)" rules={[{ required: true, message: "Informe o preço!" }]}>
-                <Input type="number" min={0} step={0.01} placeholder="Ex: 12.50" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="validade" label="Data de Validade" rules={[{ required: true, message: "Selecione uma data!" }]}>
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  disabledDate={current => current && current < moment().startOf("day")}
-                  style={{ width: "100%" }}
-                  placeholder="Selecione a data"
-                  inputReadOnly={true}
-                  className="date-picker-mobile"
-                  popupClassName="date-picker-popup-mobile"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Form.Item name="fornecedor" label="Fornecedor" rules={[{ required: true, message: "Informe o fornecedor!" }]}>
-                <Input placeholder="Ex: Distribuidora Médica ABC" />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
-
-      <Drawer
-        title="Transferência de Produtos"
-        placement="right"
-        onClose={() => setShowTransfer(false)}
-        open={showTransfer}
-        width={600}
-      >
-        <Transferencia
-          origem={stocks.vet}
-          onFinish={() => {
-            setShowTransfer(false);
-            carregarProdutos();
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            quantidade: 0,
+            valor: 0,
+            tipoQuantidade: "unitario"
           }}
-        />
+        >
+          <div className="modal-grid">
+            <Form.Item
+              name="nome"
+              label="Nome do Produto"
+              rules={[{ required: true, message: "Campo obrigatório!" }]}
+            >
+              <Input placeholder="Ex: Seringa 10ml" />
+            </Form.Item>
+            <Form.Item
+              name="categoria"
+              label="Categoria"
+              rules={[{ required: true, message: "Campo obrigatório!" }]}
+            >
+              <Select placeholder="Selecione...">
+                <Select.Option value="Medicamentos">Medicamentos</Select.Option>
+                <Select.Option value="Insumos">Insumos</Select.Option>
+                <Select.Option value="Comida">Comida</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="tipoQuantidade"
+              label="Tipo de Quantidade"
+              rules={[{ required: true, message: "Campo obrigatório!" }]}
+            >
+              <Select placeholder="Selecione...">
+                <Select.Option value="unitario">Unitário</Select.Option>
+                <Select.Option value="pacotes">Pacotes</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="quantidade"
+              label="Quantidade em Estoque"
+              rules={[{ required: true, message: "Campo obrigatório!" }]}
+            >
+              <Input type="number" min={0} placeholder="Ex: 100" />
+            </Form.Item>
+            <Form.Item
+              name="valor"
+              label="Preço Unitário (R$)"
+              rules={[{ required: true, message: "Campo obrigatório!" }]}
+            >
+              <Input type="number" min={0} step={0.01} placeholder="Ex: 12.50" />
+            </Form.Item>
+            <Form.Item
+              name="validade"
+              label="Data de Validade"
+              rules={[{ required: true, message: "Campo obrigatório!" }]}
+            >
+              <DatePicker
+                format="DD/MM/YYYY"
+                style={{ width: "100%" }}
+                placeholder="Selecione a data"
+                inputReadOnly={true}
+              />
+            </Form.Item>
+            <Form.Item
+              name="fornecedor"
+              label="Fornecedor"
+              rules={[{ required: true, message: "Campo obrigatório!" }]}
+            >
+              <Input placeholder="Ex: Distribuidora Médica ABC" />
+            </Form.Item>
+          </div>
+          <Form.Item style={{ marginTop: 16, textAlign: 'right' }}>
+            <Button onClick={() => {
+              setModalVisible(false);
+              setProdutoEditando(null);
+              form.resetFields();
+            }} style={{ marginRight: 8 }}>
+              Cancelar
+            </Button>
+            <Button type="primary" htmlType="submit">
+              {produtoEditando ? "Atualizar" : "Adicionar"} Produto
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Modal de Transferência */}
+      <Transferencia 
+        sourceStock="vet" 
+        onCancel={handleCloseTransferencia}
+        visible={transferenciaModalVisible}
+      />
+
+      {/* Drawer de detalhes do produto */}
+      <Drawer
+        title="Detalhes do Produto"
+        placement="right"
+        width={500}
+        onClose={() => {
+          setDrawerDetalhesVisible(false);
+          setProdutoSelecionado(null);
+        }}
+        open={drawerDetalhesVisible}
+        extra={
+          <Space>
+            <Button 
+              type="primary" 
+              icon={<EditOutlined />}
+              onClick={() => {
+                setDrawerDetalhesVisible(false);
+                editarProduto(produtoSelecionado);
+              }}
+            >
+              Editar
+            </Button>
+          </Space>
+        }
+      >
+        {produtoSelecionado && (
+          <div>
+            <div style={{ 
+              padding: '16px 20px', 
+              backgroundColor: 'var(--light)', 
+              borderRadius: 'var(--border-radius)',
+              marginBottom: '20px'
+            }}>
+              <h2 style={{ marginTop: 0, color: 'var(--primary)' }}>{produtoSelecionado.nome}</h2>
+              <Tag color={CORES_POR_CATEGORIA[produtoSelecionado.categoria]}>
+                {CATEGORIA_ICONS[produtoSelecionado.categoria]} {produtoSelecionado.categoria}
+              </Tag>
+              <StatusQuantidade quantidade={produtoSelecionado.quantidade} />
+            </div>
+            
+            <div className="item-details">
+              <div className="detail-item">
+                <span className="detail-label">Quantidade</span>
+                <span className="detail-value">{produtoSelecionado.quantidade}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Tipo</span>
+                <span className="detail-value">
+                  {produtoSelecionado.tipoQuantidade === 'unitario' ? 'Unitário' : 'Pacote'}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Preço Unitário</span>
+                <span className="detail-value">R$ {Number(produtoSelecionado.valor).toFixed(2)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Valor Total</span>
+                <span className="detail-value">
+                  R$ {(produtoSelecionado.valor * produtoSelecionado.quantidade).toFixed(2)}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Fornecedor</span>
+                <span className="detail-value">{produtoSelecionado.fornecedor || "-"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Validade</span>
+                <span className="detail-value">
+                  {produtoSelecionado.validade 
+                    ? moment(produtoSelecionado.validade).format("DD/MM/YYYY")
+                    : "-"}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Dias até Vencer</span>
+                <span className="detail-value">
+                  {produtoSelecionado.validade 
+                    ? moment(produtoSelecionado.validade).diff(moment(), 'days')
+                    : "-"}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Data de Criação</span>
+                <span className="detail-value">
+                  {produtoSelecionado.createdAt 
+                    ? moment(produtoSelecionado.createdAt.toDate()).format("DD/MM/YYYY HH:mm")
+                    : "-"}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Última Atualização</span>
+                <span className="detail-value">
+                  {produtoSelecionado.updatedAt 
+                    ? moment(produtoSelecionado.updatedAt.toDate()).format("DD/MM/YYYY HH:mm")
+                    : "-"}
+                </span>
+              </div>
+            </div>
+            
+            <div style={{ marginTop: '24px' }}>
+              <Popconfirm
+                title="Tem certeza que deseja excluir este produto?"
+                onConfirm={() => {
+                  excluirProduto(produtoSelecionado.id);
+                  setDrawerDetalhesVisible(false);
+                }}
+                okText="Sim"
+                cancelText="Não"
+              >
+                <Button danger icon={<DeleteOutlined />}>Excluir Produto</Button>
+              </Popconfirm>
+            </div>
+          </div>
+        )}
       </Drawer>
     </div>
   );

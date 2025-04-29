@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { 
   Table, Button, Form, Modal, Input, DatePicker, Select, 
-  Popconfirm, Tag, Space, Badge,
-  message, Drawer
+  Tooltip, Badge, Popconfirm, Tag, Space, 
+  Empty, Drawer, message, AutoComplete
 } from "antd";
 import { 
   PlusOutlined, FilterOutlined, ReloadOutlined, 
   EditOutlined, DeleteOutlined, 
   LogoutOutlined,
   InboxOutlined, MedicineBoxOutlined, CoffeeOutlined, EyeOutlined,
-  WarningOutlined
+  WarningOutlined, SwapOutlined, SearchOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebaseConfig";
@@ -23,6 +23,7 @@ import "./EstoquePrincipal.css";
 import "./estoques-comum.css";
 import "./date-picker-mobile.css";
 import { registrarOperacao } from "../services/registroService";
+import Transferencia from './Transferencia';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ChartTooltip, Legend);
 
@@ -59,6 +60,7 @@ function EstoquePrincipal() {
   const [produtoEditando, setProdutoEditando] = useState(null);
   const [mostrarGrafico, setMostrarGrafico] = useState(true);
   const [form] = Form.useForm();
+  const [transferenciaModalVisible, setTransferenciaModalVisible] = useState(false);
   
   // Estados para filtros
   const [filtroAvancado, setFiltroAvancado] = useState(false);
@@ -83,27 +85,6 @@ function EstoquePrincipal() {
     Insumos: "#2ecc71",
     Comida: "#f39c12"
   }), []);
-  
-  // Adicionar hook para detectar tamanho da tela
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
-  // Detectar mudanças no tamanho da tela
-  useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  // Função para buscar produtos
-  const handleBusca = (valor) => {
-    setBusca(valor);
-    aplicarFiltros(valor, filtros, produtos, categoriaAtiva);
-  };
   
   // Função para aplicar filtros
   const aplicarFiltros = useCallback((termoBusca, filtrosAtivos, listaProdutos, categoria) => {
@@ -197,7 +178,26 @@ function EstoquePrincipal() {
     
     setProdutosFiltrados(resultado);
   }, [filtroAvancado]);
-
+  
+  // Função para buscar produtos
+  const handleBusca = useCallback((valor) => {
+    setBusca(valor);
+    aplicarFiltros(valor, filtros, produtos, categoriaAtiva);
+  }, [filtros, produtos, categoriaAtiva, aplicarFiltros]);
+  
+  // Função para obter sugestões de busca baseadas nos produtos existentes
+  const getSugestoesBusca = useCallback(() => {
+    // Extrair nomes únicos de produtos para sugestões
+    const nomes = [...new Set(produtos.map(p => p.nome))];
+    // Extrair fornecedores únicos para sugestões
+    const fornecedores = [...new Set(produtos.map(p => p.fornecedor).filter(Boolean))];
+    // Extrair categorias únicas para sugestões
+    const categorias = [...new Set(produtos.map(p => p.categoria))];
+    
+    // Combinar todas as sugestões
+    return [...nomes, ...fornecedores, ...categorias].slice(0, 10);
+  }, [produtos]);
+  
   // Limpar filtros
   const limparFiltros = () => {
     setFiltros({
@@ -326,15 +326,14 @@ function EstoquePrincipal() {
     }
   };
 
-  const editarProduto = useCallback((produto) => {
-    console.log('Editando produto:', produto);
+  const editarProduto = (produto) => {
     setProdutoEditando(produto);
-    setModalVisible(true);
     form.setFieldsValue({
       ...produto,
       validade: produto.validade ? moment(produto.validade) : null
     });
-  }, [form]);
+    setModalVisible(true);
+  };
 
   const atualizarProduto = async (values) => {
     try {
@@ -382,7 +381,7 @@ function EstoquePrincipal() {
     }
   };
 
-  const excluirProduto = useCallback(async (id) => {
+  const excluirProduto = async (id) => {
     try {
       setCarregando(true);
       console.log("Tentando excluir produto com ID:", id);
@@ -422,7 +421,7 @@ function EstoquePrincipal() {
     } finally {
       setCarregando(false);
     }
-  }, [produtos, currentUser.email, carregarProdutos, collectionName]);
+  };
 
   // Submeter formulário
   const handleSubmit = (values) => {
@@ -431,6 +430,12 @@ function EstoquePrincipal() {
     } else {
       adicionarProduto(values);
     }
+  };
+
+  // Ver detalhes do produto
+  const verDetalhesProduto = (produto) => {
+    setProdutoSelecionado(produto);
+    setDrawerDetalhesVisible(true);
   };
 
   // Componente para status de quantidade
@@ -489,112 +494,126 @@ function EstoquePrincipal() {
     };
   }, [produtos, CORES_POR_CATEGORIA]);
 
-  // Colunas da tabela com responsividade
-  const colunas = useMemo(() => {
-    // Colunas base que serão exibidas em todos os tamanhos de tela
-    const baseColumns = [
-      { 
-        title: "Nome", 
-        dataIndex: "nome",
-        ellipsis: screenWidth < 768, // Truncar texto em dispositivos móveis
-        sorter: (a, b) => a.nome.localeCompare(b.nome)
-      },
-      { 
-        title: "Quantidade", 
-        dataIndex: "quantidade",
-        align: 'center',
-        render: (quantidade, record) => (
-          <span style={{ 
-            color: quantidade <= record.estoqueMinimo ? 'red' : 'inherit',
-            fontWeight: quantidade <= record.estoqueMinimo ? 'bold' : 'normal'
-          }}>
-            {quantidade} {record.tipoQuantidade}
-          </span>
-        )
-      },
-    ];
-
-    // Colunas para telas médias (tablets)
-    const mediumScreenColumns = [
-      { 
-        title: "Categoria", 
-        dataIndex: "categoria",
-        ellipsis: screenWidth < 1200,
-        filters: [...new Set(produtos.map(p => p.categoria))].map(cat => ({
-          text: cat,
-          value: cat
-        })),
-        onFilter: (value, record) => record.categoria === value
-      },
-      { 
-        title: "Validade", 
-        dataIndex: "validade", 
-        render: val => (val ? moment(val).format("DD/MM/YYYY") : "-"),
-        sorter: (a, b) => {
-          if (!a.validade) return 1;
-          if (!b.validade) return -1;
-          return moment(a.validade).diff(moment(b.validade));
-        }
-      },
-    ];
-
-    // Colunas para telas grandes (desktop)
-    const largeScreenColumns = [
-      { 
-        title: "Fornecedor", 
-        dataIndex: "fornecedor",
-        ellipsis: true
-      },
-      { 
-        title: "Preço (R$)", 
-        dataIndex: "valor", 
-        render: val => `R$ ${Number(val).toFixed(2)}`,
-        sorter: (a, b) => a.valor - b.valor
-      },
-    ];
-
-    // Coluna de ações sempre presente
-    const actionsColumn = {
-      title: "Ações",
-      width: screenWidth < 576 ? 80 : 120,
-      render: (_, record) => (
-        <div className="acoes-container">
-          <Button 
-            icon={<EditOutlined />} 
-            onClick={() => editarProduto(record)}
-            size={screenWidth < 576 ? "small" : "middle"} 
+  // Renderizar tabela de produtos
+  const colunas = [
+    {
+      title: "Nome",
+      dataIndex: "nome",
+      key: "nome",
+      render: (text, record) => (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div 
+            style={{ 
+              backgroundColor: CORES_POR_CATEGORIA[record.categoria] || '#ccc', 
+              width: '8px', 
+              height: '8px', 
+              borderRadius: '50%', 
+              marginRight: '8px'
+            }} 
           />
-          <Popconfirm
-            title="Tem certeza que deseja excluir este produto?"
-            onConfirm={() => excluirProduto(record.id)}
-          >
-            <Button 
-              icon={<DeleteOutlined />} 
-              danger 
-              size={screenWidth < 576 ? "small" : "middle"}
-            />
-          </Popconfirm>
+          <span>{text}</span>
         </div>
+      ),
+      sorter: (a, b) => a.nome.localeCompare(b.nome)
+    },
+    {
+      title: "Categoria",
+      dataIndex: "categoria",
+      key: "categoria",
+      render: (text) => (
+        <Tag color={CORES_POR_CATEGORIA[text] || '#ccc'} style={{ fontWeight: 500 }}>
+          {CATEGORIA_ICONS[text]} {text}
+        </Tag>
+      ),
+      filters: Object.keys(CORES_POR_CATEGORIA).map(cat => ({ text: cat, value: cat })),
+      onFilter: (value, record) => record.categoria === value
+    },
+    {
+      title: "Quantidade",
+      dataIndex: "quantidade",
+      key: "quantidade",
+      render: (text) => (
+        <span style={{ fontWeight: 500 }}>{text}</span>
+      ),
+      sorter: (a, b) => a.quantidade - b.quantidade
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (_, record) => <StatusQuantidade quantidade={record.quantidade} />
+    },
+    {
+      title: "Preço (R$)",
+      dataIndex: "valor",
+      key: "valor",
+      render: (text) => (
+        <span>R$ {Number(text).toFixed(2)}</span>
+      ),
+      sorter: (a, b) => a.valor - b.valor
+    },
+    {
+      title: "Validade",
+      dataIndex: "validade",
+      key: "validade",
+      render: (date) => date ? moment(date).format("DD/MM/YYYY") : "-",
+      sorter: (a, b) => {
+        if (!a.validade) return 1;
+        if (!b.validade) return -1;
+        return moment(a.validade).diff(moment(b.validade));
+      }
+    },
+    {
+      title: "Ações",
+      key: "acoes",
+      render: (_, record) => (
+        <Space size="small">
+          <Tooltip title="Ver detalhes">
+            <Button 
+              icon={<EyeOutlined />} 
+              onClick={() => verDetalhesProduto(record)}
+              type="text" 
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="Editar">
+            <Button 
+              icon={<EditOutlined />} 
+              onClick={() => editarProduto(record)}
+              type="text" 
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="Excluir">
+            <Popconfirm
+              title="Tem certeza que deseja excluir este produto?"
+              onConfirm={() => excluirProduto(record.id)}
+              okText="Sim"
+              cancelText="Não"
+            >
+              <Button 
+                icon={<DeleteOutlined />} 
+                type="text" 
+                danger 
+                size="small"
+              />
+            </Popconfirm>
+          </Tooltip>
+        </Space>
       )
-    };
-
-    // Construir conjunto de colunas baseado no tamanho da tela
-    let columns = [...baseColumns];
-    
-    if (screenWidth >= 768) {
-      columns = [...columns, ...mediumScreenColumns];
     }
-    
-    if (screenWidth >= 992) {
-      columns = [...columns, ...largeScreenColumns];
-    }
-    
-    columns.push(actionsColumn);
-    
-    return columns;
-  }, [screenWidth, produtos, excluirProduto, editarProduto]);
+  ];
 
   // Renderização principal
+  const handleOpenTransferencia = () => {
+    setTransferenciaModalVisible(true);
+  };
+
+  const handleCloseTransferencia = () => {
+    setTransferenciaModalVisible(false);
+    // Recarregar produtos após fechar o modal de transferência
+    carregarProdutos();
+  };
+
   return (
     <div className="estoque-container">
       <div className="header-fixo">
@@ -650,24 +669,34 @@ function EstoquePrincipal() {
             {mostrarGrafico ? 'Ocultar Gráfico' : 'Mostrar Gráfico'}
           </Button>
           <Button 
-            icon={<LogoutOutlined />}
-            onClick={() => navigate('/transferencia')}>
-            Transferência
+            icon={<SwapOutlined />}
+            onClick={handleOpenTransferencia}>
+            Transferir
           </Button>
         </div>
       </div>
 
       <div className="control-bar">
         <div className="search-area">
-          <div className="search-container">
-            <Input.Search
-              placeholder="Buscar por nome, código, fornecedor..."
+          <div className="search-container" style={{ display: 'flex', width: '100%' }}>
+            <AutoComplete
+              style={{ flex: 1 }}
               value={busca}
-              onChange={(e) => handleBusca(e.target.value)}
-              onSearch={(value) => handleBusca(value)}
-              style={{ width: '100%' }}
+              onChange={(value) => setBusca(value)}
+              options={getSugestoesBusca().map((sugestao) => ({ value: sugestao }))}
+              onSelect={(value) => handleBusca(value)}
+              placeholder="Buscar por nome, código, fornecedor..."
               size="large"
             />
+            <Button 
+              type="primary" 
+              icon={<SearchOutlined />} 
+              onClick={() => handleBusca(busca)}
+              style={{ marginLeft: 8 }}
+              size="large"
+            >
+              Buscar
+            </Button>
           </div>
         </div>
       </div>
@@ -864,45 +893,23 @@ function EstoquePrincipal() {
           </div>
           
           <Table
-            dataSource={produtosFiltrados}
             columns={colunas}
+            dataSource={produtosFiltrados}
             rowKey="id"
             loading={carregando}
-            pagination={{ 
-              pageSize: screenWidth < 768 ? 8 : 10,
-              showSizeChanger: screenWidth >= 768,
-              showQuickJumper: screenWidth >= 992,
-              size: screenWidth < 768 ? "small" : "default"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} itens`
             }}
-            size={screenWidth < 768 ? "small" : "middle"}
-            scroll={{ x: 'max-content' }}
-            rowClassName={(record) => record.quantidade <= record.estoqueMinimo ? 'estoque-baixo' : ''}
-            summary={pageData => {
-              let totalQuantidade = 0;
-              let totalValor = 0;
-
-              pageData.forEach(({ quantidade, valor }) => {
-                totalQuantidade += Number(quantidade);
-                totalValor += Number(valor) * Number(quantidade);
-              });
-
-              return (
-                <>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={screenWidth < 768 ? 1 : 2}>
-                      <strong>Total</strong>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1}>
-                      <strong>{totalQuantidade}</strong>
-                    </Table.Summary.Cell>
-                    {screenWidth >= 992 && (
-                      <Table.Summary.Cell index={2} colSpan={screenWidth >= 1200 ? 2 : 1}>
-                        <strong>Valor Total: R$ {totalValor.toFixed(2)}</strong>
-                      </Table.Summary.Cell>
-                    )}
-                  </Table.Summary.Row>
-                </>
-              );
+            locale={{
+              emptyText: (
+                <Empty 
+                  image={Empty.PRESENTED_IMAGE_SIMPLE} 
+                  description="Nenhum produto encontrado"
+                />
+              )
             }}
           />
         </div>
@@ -1007,6 +1014,13 @@ function EstoquePrincipal() {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Modal de Transferência */}
+      <Transferencia 
+        sourceStock="principal" 
+        onCancel={handleCloseTransferencia}
+        visible={transferenciaModalVisible}
+      />
 
       {/* Drawer de detalhes do produto */}
       <Drawer

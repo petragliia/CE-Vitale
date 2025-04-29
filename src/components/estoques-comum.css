@@ -483,48 +483,21 @@
 }
 
 /* Responsividade */
-@media (max-width: 1200px) {
-  .header-fixo {
-    max-width: 95%;
-  }
-
-  .estatisticas-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-  }
-}
-
 @media (max-width: 992px) {
   .estoque-container {
     padding: 1.5rem 4%;
   }
-
-  .card-grid {
+  
+  .filtros-avancados .form-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .stats-grid {
+  
+  .form-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  /* Responsividade para tabelas */
-  .ant-table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* Melhor scrolling em dispositivos iOS */
-  }
-
-  /* Ajustar tamanho das colunas em telas menores */
-  .ant-table-thead > tr > th,
-  .ant-table-tbody > tr > td {
-    padding: 12px 8px;
-    white-space: nowrap;
-  }
-
-  /* Melhorar a visualização de ações em telas menores */
-  .acoes-container {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
+  
+  .filters-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -558,14 +531,6 @@
   .botoes-container {
     justify-content: center;
     width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .control-buttons {
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
   }
   
   .filtros-avancados .form-grid {
@@ -585,18 +550,6 @@
   
   .filters-grid {
     grid-template-columns: 1fr;
-  }
-
-  /* Melhorar visualização de dados em tabelas */
-  .ant-table-thead > tr > th,
-  .ant-table-tbody > tr > td {
-    font-size: 14px;
-  }
-
-  /* Melhores tamanhos para botões em telas touch */
-  .ant-btn {
-    min-height: 40px;
-    min-width: 40px;
   }
 }
 
@@ -653,89 +606,5 @@
   
   .filters-actions .ant-btn {
     width: 100%;
-  }
-
-  /* Tabelas em telas muito pequenas */
-  .ant-table-wrapper {
-    margin: 0 -5%;
-    width: calc(100% + 10%);
-    overflow-x: auto;
-  }
-
-  /* Esconder colunas menos importantes em telas muito pequenas */
-  .acoes-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  /* Melhor espaçamento para touch */
-  .acoes-container .ant-btn {
-    margin-bottom: 5px;
-  }
-
-  /* Estilo para cabeçalho e rodapé melhor em mobile */
-  .header {
-    padding: 1rem;
-  }
-
-  .header-title h1 {
-    font-size: 1.2rem;
-  }
-}
-
-/* Suporte para telas muito pequenas */
-@media (max-width: 380px) {
-  .estoque-container {
-    padding: 0.5rem 3%;
-  }
-
-  .header-title h1 {
-    font-size: 1rem;
-  }
-
-  .header-actions .ant-btn {
-    padding: 0 8px;
-    font-size: 12px;
-  }
-  
-  .ant-modal-body {
-    padding: 12px;
-  }
-  
-  .ant-form-item {
-    margin-bottom: 12px;
-  }
-}
-
-/* Suporte específico para orientação paisagem em dispositivos móveis */
-@media (max-height: 500px) and (orientation: landscape) {
-  .header {
-    padding: 0.8rem 1rem;
-  }
-  
-  .header-title h1 {
-    font-size: 1.1rem;
-  }
-  
-  .control-buttons {
-    padding: 0.5rem;
-  }
-  
-  /* Modais mais compactos para paisagem */
-  .ant-modal-body {
-    max-height: 60vh;
-    overflow-y: auto;
-  }
-}
-
-/* Ajustes para telas maiores - desktop e tablets grandes */
-@media (min-width: 1600px) {
-  .header-fixo {
-    max-width: 1400px;
-  }
-  
-  .card-grid, .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
 }
