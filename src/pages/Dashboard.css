@@ -12,7 +12,9 @@
   flex-direction: column;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden; /* Adicionado para prevenir rolagem lateral */
+  overflow-x: hidden; /* Prevenir rolagem lateral */
+  width: 100%;
+  max-width: 100vw; /* Garantir que não ultrapasse a largura da viewport */
   background: var(--background-gradient);
 }
 
@@ -28,6 +30,8 @@
   z-index: 100;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  width: 100%;
+  box-sizing: border-box; /* Garantir que padding não cause overflow */
 }
 
 /* Logo no cabeçalho */
@@ -130,6 +134,7 @@
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden; /* Prevenir rolagem lateral */
 }
 
 /* Cards */
@@ -250,6 +255,18 @@
     min-height: 200px;
     max-width: 350px;
   }
+  
+  .dashboard-header {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .data-hora-container {
+    margin-left: 15px;
+  }
+  
+  .user-info {
+    margin-left: 15px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -265,6 +282,38 @@
   
   .dashboard-header {
     padding: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .logo-vitale {
+    height: 40px;
+    margin-right: 8px;
+  }
+  
+  .data-hora-container {
+    margin-left: 0;
+  }
+  
+  .header-right {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .data-hora-inner {
+    padding: 6px 12px;
+  }
+  
+  .user-info {
+    margin-left: 10px;
+    padding-left: 10px;
+    gap: 0.8rem;
   }
 }
 
@@ -281,10 +330,124 @@
   
   .dashboard-header {
     padding: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
   }
   
   .dashboard-header h1 {
     font-size: 1.5rem;
+  }
+  
+  .header-left, .header-right {
+    width: 100%;
+  }
+  
+  .header-left {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .logo-container {
+    margin-right: 0;
+  }
+  
+  .logo-vitale {
+    height: 36px;
+  }
+  
+  .data-hora-container {
+    width: 100%;
+    margin-top: 8px;
+    margin-left: 0;
+    justify-content: center;
+  }
+  
+  .user-info {
+    margin-left: 0;
+    justify-content: space-between;
+    width: 100%;
+    padding-left: 0;
+  }
+  
+  .user-info::before {
+    display: none;
+  }
+  
+  .header-right {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  
+  .data-hora-inner {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
+  
+  .data-hora-inner span {
+    margin-right: 6px;
+  }
+}
+
+/* Estilos específicos para dispositivos móveis mais estreitos */
+@media (max-width: 425px) {
+  .dashboard-header {
+    padding: 0.6rem;
+  }
+  
+  .data-hora-inner {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+  }
+  
+  .logo-vitale {
+    height: 32px;
+  }
+  
+  /* Ajustes para botões importantes */
+  .ant-btn.header-btn {
+    padding: 4px 8px;
+    height: auto;
+    font-size: 0.85rem;
+  }
+  
+  .ant-dropdown-trigger {
+    padding: 4px 8px;
+    height: auto;
+  }
+  
+  /* Garantir que o horário completo seja mostrado */
+  .data-hora-inner span {
+    overflow: visible;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .ant-card.dashboard-card {
+    max-width: 240px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.35rem;
+  }
+  
+  .data-hora-inner {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+  
+  /* Reorganizar botões em telas muito pequenas */
+  .header-right {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+  }
+  
+  .ant-btn.header-btn, .ant-dropdown-trigger {
+    margin: 2px;
   }
 }
 
@@ -811,5 +974,249 @@
   .btn-padrao .anticon {
     font-size: 16px !important;
     margin-right: 4px !important;
+  }
+}
+
+/* Estilização específica para os botões do header */
+.header-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  margin: 0 4px;
+}
+
+.btn-settings {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.btn-logout {
+  background-color: rgba(255, 59, 48, 0.1) !important;
+  border-color: rgba(255, 59, 48, 0.3) !important;
+  color: white !important;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 1rem;
+  }
+  
+  .ant-card.dashboard-card {
+    height: 200px;
+    min-height: 200px;
+    max-width: 300px;
+  }
+  
+  .dashboard-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .logo-vitale {
+    height: 40px;
+    margin-right: 8px;
+  }
+  
+  .data-hora-container {
+    margin-left: 0;
+  }
+  
+  .header-right {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .data-hora-inner {
+    padding: 6px 12px;
+  }
+  
+  .user-info {
+    margin-left: 10px;
+    padding-left: 10px;
+    gap: 0.8rem;
+  }
+  
+  /* Garantir que os botões sejam visíveis */
+  .header-btn {
+    min-width: 32px;
+    height: 32px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .header-btn span {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-content {
+    padding: 0.5rem;
+  }
+  
+  .ant-card.dashboard-card {
+    height: 200px;
+    min-height: 200px;
+    max-width: 280px;
+  }
+  
+  .dashboard-header {
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header-left, .header-right {
+    width: 100%;
+  }
+  
+  .header-left {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .logo-container {
+    margin-right: 0;
+  }
+  
+  .logo-vitale {
+    height: 36px;
+  }
+  
+  .data-hora-container {
+    width: 100%;
+    margin-top: 8px;
+    margin-left: 0;
+    justify-content: center;
+  }
+  
+  .user-info {
+    margin-left: 0;
+    justify-content: space-between;
+    width: auto;
+    padding-left: 0;
+  }
+  
+  .user-info::before {
+    display: none;
+  }
+  
+  .header-right {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+  
+  /* Garantir que os botões estejam visíveis */
+  .ant-space {
+    display: flex !important;
+  }
+  
+  .header-btn {
+    min-width: 32px !important;
+    height: 32px !important; 
+    padding: 0 8px !important;
+    margin-left: 8px !important;
+  }
+  
+  .btn-logout {
+    margin-left: 8px !important;
+    border: 1px solid rgba(255, 59, 48, 0.5) !important;
+  }
+  
+  .data-hora-inner {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
+  
+  .data-hora-inner span {
+    margin-right: 6px;
+  }
+}
+
+@media (max-width: 425px) {
+  .dashboard-header {
+    padding: 0.6rem;
+  }
+  
+  .data-hora-inner {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+  }
+  
+  .logo-vitale {
+    height: 32px;
+  }
+  
+  /* Ajustes para botões importantes */
+  .header-btn {
+    padding: 0 8px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  .btn-logout span[role="img"] {
+    margin-right: 4px !important;
+  }
+  
+  /* Garantir que o horário completo seja mostrado */
+  .data-hora-inner span {
+    overflow: visible;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .ant-card.dashboard-card {
+    max-width: 240px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.35rem;
+  }
+  
+  .data-hora-inner {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+  
+  /* Fazer os botões ficarem um abaixo do outro em telas muito pequenas */
+  .header-right {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .user-info {
+    margin-bottom: 8px;
+  }
+  
+  .header-btn {
+    margin-bottom: 4px !important;
   }
 }

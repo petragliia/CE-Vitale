@@ -234,17 +234,19 @@ function Dashboard() {
             <img src={logoVitale} alt="Logo Vitale" className="logo-vitale" />
           </div>
           <h1>Vitale Controle de Estoque</h1>
-          <div className="data-hora-container">
-            <div className="data-hora-inner">
-              <CalendarOutlined />
-              <span>{formatarData(dataHoraAtual)}</span>
-              <ClockCircleOutlined style={{ marginLeft: '10px' }} />
-              <span>{formatarHora(dataHoraAtual)}</span>
-            </div>
+        </div>
+        <div className="data-hora-container">
+          <div className="data-hora-inner">
+            <CalendarOutlined />
+            <span>{formatarData(dataHoraAtual)}</span>
+            <ClockCircleOutlined style={{ marginLeft: '10px' }} />
+            <span>{formatarHora(dataHoraAtual)}</span>
           </div>
         </div>
-        <div className="user-info">
-          <span>Olá, {displayName || (currentUser?.email ? currentUser.email.split('@')[0] : "Usuário")}</span>
+        <div className="header-right">
+          <div className="user-info">
+            <span>Olá, {displayName || (currentUser?.email ? currentUser.email.split('@')[0] : "Usuário")}</span>
+          </div>
           <Space>
             <Dropdown
               menu={{ items: menuItems }}
@@ -258,14 +260,14 @@ function Dashboard() {
               >
                 <Button 
                   icon={<SettingOutlined />} 
-                  className="btn-padrao btn-settings"
+                  className="btn-padrao btn-settings header-btn"
                   type="default"
                 />
               </Badge>
             </Dropdown>
             <Button 
               icon={<LogoutOutlined />} 
-              className="btn-padrao btn-logout" 
+              className="btn-padrao btn-logout header-btn" 
               onClick={handleLogout}
               danger
             >
