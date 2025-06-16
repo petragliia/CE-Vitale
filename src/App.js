@@ -10,11 +10,42 @@ import Dashboard from "./pages/Dashboard";
 import Transferencia from "./components/Transferencia";
 import Registro from "./pages/Registro";
 import RelatorioVariacaoFluxo from "./components/RelatorioVariacaoFluxo";
+import PendingApproval from "./pages/PendingApproval";
+import AdminPanel from "./pages/AdminPanel";
+import SetupAdmin from "./components/SetupAdmin";
+import AdminReset from "./pages/AdminReset";
 import "./global.css";
 
 function PrivateRoute({ children }) {
-  const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/login" replace />;
+  const { currentUser, userStatus } = useAuth();
+  
+  // Redirecionar para login se não estiver autenticado
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Redirecionar para página de espera se não estiver aprovado
+  if (userStatus !== "approved") {
+    return <Navigate to="/pending-approval" replace />;
+  }
+  
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { currentUser, userRole } = useAuth();
+  
+  // Redirecionar para login se não estiver autenticado
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Redirecionar para dashboard se não for admin
+  if (userRole !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
 }
 
 function App() {
@@ -22,7 +53,24 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Rotas públicas */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/pending-approval" element={<PendingApproval />} />
+          <Route path="/setup-admin" element={<SetupAdmin />} />
+          <Route path="/admin-reset" element={<AdminReset />} />
+          
+          {/* Rotas administrativas */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminPanel />
+              </AdminRoute>
+            }
+          />
+          
+          {/* Rotas privadas */}
           <Route
             path="/dashboard"
             element={

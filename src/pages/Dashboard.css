@@ -1,3 +1,4 @@
+
 :root {
   --primary-blue: #0d47a1;
   --secondary-blue: #1976d2;
@@ -18,81 +19,84 @@
   background: var(--background-gradient);
 }
 
-/* Cabeçalho */
+/* ================================================================== */
+/* =========== CABEÇALHO REORGANIZADO PARA MELHOR LAYOUT ============ */
+/* ================================================================== */
+
 .dashboard-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 3rem;
+  justify-content: space-between; /* Empurra o .header-left e .header-right para as extremidades */
+  padding: 1rem 2.5rem;
   background: var(--primary-blue);
   box-shadow: 0 4px 20px rgba(13, 71, 161, 0.3);
-  position: relative;
-  z-index: 100;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   width: 100%;
-  box-sizing: border-box; /* Garantir que padding não cause overflow */
+  box-sizing: border-box;
+  gap: 20px; /* Espaço entre os elementos principais */
 }
 
-/* Logo no cabeçalho */
-.logo-container {
+/* Container da Esquerda: Logo e Título */
+.header-left {
   display: flex;
   align-items: center;
-  margin-right: 16px;
+  gap: 16px;
 }
 
 .logo-vitale {
   height: 50px;
   width: auto;
   border-radius: 8px;
-  margin-right: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.header-left {
+.dashboard-header h1 {
+  margin: 0;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
+/* Container da Direita: Data, Usuário e Botões */
+.header-right {
   display: flex;
   align-items: center;
+  gap: 24px; /* Espaçamento entre os itens da direita */
 }
 
-/* Data e hora no cabeçalho */
 .data-hora-container {
-  display: flex;
-  margin-left: 30px;
-  font-family: 'Poppins', sans-serif;
+  display: flex; /* Mantido para consistência */
 }
 
 .data-hora-inner {
   display: flex;
   align-items: center;
-  background-color: white;
-  padding: 8px 15px;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.data-hora-inner span {
-  margin-left: 6px;
-  margin-right: 10px;
+  gap: 8px;
+  color: var(--light-blue);
   font-family: 'Poppins', sans-serif;
-  color: #333;
   font-weight: 500;
+  padding: 8px 15px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  white-space: nowrap;
 }
 
 .data-hora-inner .anticon {
-  color: var(--primary-blue);
+  color: white;
 }
 
-/* Informações do usuário */
 .user-info {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-left: 30px;
-  padding-left: 20px;
+  gap: 8px;
+  color: white;
+  font-weight: 500;
+  white-space: nowrap;
   position: relative;
+  padding-left: 24px;
 }
 
+/* Linha vertical separadora */
 .user-info::before {
   content: '';
   position: absolute;
@@ -100,12 +104,6 @@
   height: 30px;
   width: 1px;
   background-color: rgba(255, 255, 255, 0.3);
-}
-
-.user-info span {
-  color: var(--light-blue);
-  font-weight: 500;
-  white-space: nowrap;
 }
 
 /* Restante do código mantido igual */
@@ -119,13 +117,6 @@
   background: linear-gradient(to bottom, rgba(13,71,161,0.1), transparent);
 }
 
-.dashboard-header h1 {
-  margin: 0;
-  color: white;
-  font-size: 1.8rem;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-}
 
 /* Conteúdo Principal */
 .dashboard-content {
@@ -238,435 +229,65 @@
 .ant-col:nth-child(3) { animation-delay: 0.3s; }
 .ant-col:nth-child(4) { animation-delay: 0.4s; }
 
-/* Responsividade */
-@media (max-width: 1200px) {
-  .dashboard-content {
-    padding: 1.5rem 1rem;
-  }
-}
+/* ================================================================== */
+/* =================== RESPONSIVIDADE AJUSTADA ====================== */
+/* ================================================================== */
 
-@media (max-width: 992px) {
-  .dashboard-content {
-    padding: 1.5rem 0.5rem;
-  }
-  
-  .ant-card.dashboard-card {
-    height: 200px;
-    min-height: 200px;
-    max-width: 350px;
-  }
-  
+@media (max-width: 1100px) {
   .dashboard-header {
-    padding: 1.25rem 1.5rem;
-  }
-  
-  .data-hora-container {
-    margin-left: 15px;
-  }
-  
-  .user-info {
-    margin-left: 15px;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-content {
-    padding: 1rem;
-  }
-  
-  .ant-card.dashboard-card {
-    height: 200px;
-    min-height: 200px;
-    max-width: 300px;
-  }
-  
-  .dashboard-header {
-    padding: 1rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
   }
   
   .header-left {
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    justify-content: center;
   }
-  
-  .logo-vitale {
-    height: 40px;
-    margin-right: 8px;
-  }
-  
-  .data-hora-container {
-    margin-left: 0;
-  }
-  
+
   .header-right {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  .data-hora-inner {
-    padding: 6px 12px;
-  }
-  
-  .user-info {
-    margin-left: 10px;
-    padding-left: 10px;
-    gap: 0.8rem;
+    justify-content: space-around; /* Distribui melhor em telas médias */
   }
 }
 
-@media (max-width: 576px) {
-  .dashboard-content {
-    padding: 0.5rem;
-  }
-  
-  .ant-card.dashboard-card {
-    height: 200px;
-    min-height: 200px;
-    max-width: 280px;
-  }
-  
-  .dashboard-header {
-    padding: 0.75rem;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
+
+@media (max-width: 768px) {
   .dashboard-header h1 {
     font-size: 1.5rem;
   }
-  
-  .header-left, .header-right {
-    width: 100%;
+
+  .header-right {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
-  
-  .header-left {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-  
-  .logo-container {
-    margin-right: 0;
-  }
-  
-  .logo-vitale {
-    height: 36px;
-  }
-  
-  .data-hora-container {
-    width: 100%;
-    margin-top: 8px;
-    margin-left: 0;
-    justify-content: center;
+
+  .user-info::before {
+    display: none; /* Remove o separador em layout de coluna */
   }
   
   .user-info {
-    margin-left: 0;
-    justify-content: space-between;
-    width: 100%;
     padding-left: 0;
-  }
-  
-  .user-info::before {
-    display: none;
-  }
-  
-  .header-right {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-  }
-  
-  .data-hora-inner {
-    font-size: 0.85rem;
-    padding: 5px 10px;
-  }
-  
-  .data-hora-inner span {
-    margin-right: 6px;
   }
 }
 
-/* Estilos específicos para dispositivos móveis mais estreitos */
-@media (max-width: 425px) {
+@media (max-width: 480px) {
   .dashboard-header {
-    padding: 0.6rem;
+    padding: 1rem;
   }
-  
-  .data-hora-inner {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-    white-space: nowrap;
-  }
-  
-  .logo-vitale {
-    height: 32px;
-  }
-  
-  /* Ajustes para botões importantes */
-  .ant-btn.header-btn {
-    padding: 4px 8px;
-    height: auto;
-    font-size: 0.85rem;
-  }
-  
-  .ant-dropdown-trigger {
-    padding: 4px 8px;
-    height: auto;
-  }
-  
-  /* Garantir que o horário completo seja mostrado */
-  .data-hora-inner span {
-    overflow: visible;
-    white-space: nowrap;
-  }
-}
 
-@media (max-width: 360px) {
-  .ant-card.dashboard-card {
-    max-width: 240px;
+  .header-left {
+    flex-direction: column;
+    gap: 8px;
   }
   
   .dashboard-header h1 {
-    font-size: 1.35rem;
+    font-size: 1.3rem;
+    text-align: center;
   }
-  
-  .data-hora-inner {
-    font-size: 0.75rem;
-    padding: 3px 6px;
-  }
-  
-  /* Reorganizar botões em telas muito pequenas */
-  .header-right {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 5px;
-  }
-  
-  .ant-btn.header-btn, .ant-dropdown-trigger {
-    margin: 2px;
-  }
-}
 
-/* Estilos específicos para iPhone 13/14/15 */
-@media (max-width: 390px) {
-  .ant-card.dashboard-card {
-    max-width: 260px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 1.4rem;
-  }
-}
-
-/* Estilos específicos para iPhone 11 */
-@media (max-width: 414px) {
-  .ant-card.dashboard-card {
-    max-width: 270px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 1.45rem;
-  }
-}
-
-/* Estilos específicos para S24 Ultra */
-@media (min-width: 1440px) {
-  .dashboard-content {
-    padding: 2.5rem;
-  }
-  
-  .ant-card.dashboard-card {
-    max-width: 450px;
-  }
-}
-
-/* Estilos específicos para S25 */
-@media (min-width: 1460px) {
-  .dashboard-content {
-    padding: 3rem;
-  }
-  
-  .ant-card.dashboard-card {
-    max-width: 470px;
-  }
-}
-
-/* Estilos específicos para S23 */
-@media (min-width: 1400px) {
-  .dashboard-content {
-    padding: 2.5rem;
-  }
-  
-  .ant-card.dashboard-card {
-    max-width: 420px;
-  }
-}
-
-/* Estilos específicos para A55 */
-@media (max-width: 360px) {
-  .ant-card.dashboard-card {
-    max-width: 240px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 1.35rem;
-  }
-}
-
-/* Ajustes para o relatório */
-.relatorio-conteudo {
-  padding: 15px;
-}
-
-.relatorio-cabecalho {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.relatorio-cabecalho h1 {
-  color: var(--primary-blue);
-  font-size: 24px;
-  margin-bottom: 5px;
-}
-
-.relatorio-cabecalho h2 {
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.relatorio-data {
-  font-size: 14px;
-  color: #666;
-}
-
-.relatorio-secao {
-  margin-bottom: 25px;
-}
-
-.relatorio-secao h3 {
-  color: var(--secondary-blue);
-  font-size: 16px;
-  margin-bottom: 10px;
-  border-left: 3px solid var(--secondary-blue);
-  padding-left: 10px;
-}
-
-.relatorio-tabela {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.relatorio-tabela th {
-  background-color: #f5f5f5;
-  padding: 10px;
-  text-align: left;
-  border-bottom: 2px solid #ddd;
-}
-
-.relatorio-tabela td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.relatorio-tabela tr:hover {
-  background-color: #f9f9f9;
-}
-
-.relatorio-resumo {
-  background-color: #f5f8ff;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 20px;
-}
-
-.relatorio-resumo h3 {
-  color: var(--primary-blue);
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-
-/* Estilos para impressão */
-@media print {
-  body {
-    background: white;
-    font-size: 12pt;
-  }
-  
-  .relatorio-conteudo {
-    width: 100%;
-    max-width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .relatorio-cabecalho h1 {
-    font-size: 20pt;
-  }
-  
-  .relatorio-cabecalho h2 {
-    font-size: 16pt;
-  }
-  
-  .relatorio-cabecalho .relatorio-data {
-    font-size: 10pt;
-    margin-bottom: 5px;
-  }
-  
-  .relatorio-secao {
-    margin-bottom: 10px;
-    page-break-inside: avoid;
-  }
-  
-  .relatorio-secao h3 {
-    font-size: 14pt;
-    margin-bottom: 5px;
-    border-left: none;
-    border-bottom: 1px solid #333;
-    padding-left: 0;
-  }
-  
-  .relatorio-tabela {
-    page-break-inside: avoid;
-    font-size: 10pt;
-    width: 100%;
-  }
-  
-  .relatorio-tabela th, .relatorio-tabela td {
-    padding: 3px 5px;
-  }
-  
-  .relatorio-tabela th {
-    background-color: #eee !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
-  .ant-divider {
-    margin: 8px 0;
-  }
-  
-  .relatorio-resumo {
-    padding: 8px;
-    margin-top: 8px;
-    page-break-inside: avoid;
-  }
-  
-  .relatorio-resumo h3 {
-    font-size: 12pt;
-    margin-bottom: 5px;
-  }
-  
-  /* Esconder elementos não necessários na impressão */
-  .ant-modal-header, 
-  .ant-modal-footer, 
-  button {
-    display: none !important;
+  .data-hora-inner, .user-info {
+    font-size: 0.9rem;
   }
 }
 
@@ -1218,5 +839,225 @@
   
   .header-btn {
     margin-bottom: 4px !important;
+  }
+}
+
+
+/* Estilos específicos para iPhone 13/14/15 */
+@media (max-width: 390px) {
+  .ant-card.dashboard-card {
+    max-width: 260px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Estilos específicos para iPhone 11 */
+@media (max-width: 414px) {
+  .ant-card.dashboard-card {
+    max-width: 270px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.45rem;
+  }
+}
+
+/* Estilos específicos para S24 Ultra */
+@media (min-width: 1440px) {
+  .dashboard-content {
+    padding: 2.5rem;
+  }
+  
+  .ant-card.dashboard-card {
+    max-width: 450px;
+  }
+}
+
+/* Estilos específicos para S25 */
+@media (min-width: 1460px) {
+  .dashboard-content {
+    padding: 3rem;
+  }
+  
+  .ant-card.dashboard-card {
+    max-width: 470px;
+  }
+}
+
+/* Estilos específicos para S23 */
+@media (min-width: 1400px) {
+  .dashboard-content {
+    padding: 2.5rem;
+  }
+  
+  .ant-card.dashboard-card {
+    max-width: 420px;
+  }
+}
+
+/* Estilos específicos para A55 */
+@media (max-width: 360px) {
+  .ant-card.dashboard-card {
+    max-width: 240px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.35rem;
+  }
+}
+
+/* Ajustes para o relatório */
+.relatorio-conteudo {
+  padding: 15px;
+}
+
+.relatorio-cabecalho {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.relatorio-cabecalho h1 {
+  color: var(--primary-blue);
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.relatorio-cabecalho h2 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.relatorio-data {
+  font-size: 14px;
+  color: #666;
+}
+
+.relatorio-secao {
+  margin-bottom: 25px;
+}
+
+.relatorio-secao h3 {
+  color: var(--secondary-blue);
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--secondary-blue);
+  padding-left: 10px;
+}
+
+.relatorio-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.relatorio-tabela th {
+  background-color: #f5f5f5;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.relatorio-tabela td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.relatorio-tabela tr:hover {
+  background-color: #f9f9f9;
+}
+
+.relatorio-resumo {
+  background-color: #f5f8ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.relatorio-resumo h3 {
+  color: var(--primary-blue);
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+/* Estilos para impressão */
+@media print {
+  body {
+    background: white;
+    font-size: 12pt;
+  }
+  
+  .relatorio-conteudo {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .relatorio-cabecalho h1 {
+    font-size: 20pt;
+  }
+  
+  .relatorio-cabecalho h2 {
+    font-size: 16pt;
+  }
+  
+  .relatorio-cabecalho .relatorio-data {
+    font-size: 10pt;
+    margin-bottom: 5px;
+  }
+  
+  .relatorio-secao {
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+  }
+  
+  .relatorio-secao h3 {
+    font-size: 14pt;
+    margin-bottom: 5px;
+    border-left: none;
+    border-bottom: 1px solid #333;
+    padding-left: 0;
+  }
+  
+  .relatorio-tabela {
+    page-break-inside: avoid;
+    font-size: 10pt;
+    width: 100%;
+  }
+  
+  .relatorio-tabela th, .relatorio-tabela td {
+    padding: 3px 5px;
+  }
+  
+  .relatorio-tabela th {
+    background-color: #eee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .ant-divider {
+    margin: 8px 0;
+  }
+  
+  .relatorio-resumo {
+    padding: 8px;
+    margin-top: 8px;
+    page-break-inside: avoid;
+  }
+  
+  .relatorio-resumo h3 {
+    font-size: 12pt;
+    margin-bottom: 5px;
+  }
+  
+  /* Esconder elementos não necessários na impressão */
+  .ant-modal-header, 
+  .ant-modal-footer, 
+  button {
+    display: none !important;
   }
 }

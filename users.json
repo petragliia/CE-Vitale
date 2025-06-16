@@ -1,0 +1,249 @@
+{"users": [
+{
+  "localId": "3wYXFnfA2wOM2cKHW8kIL7ii0g63",
+  "email": "joao.vitormartinspetraglia@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "nB+Yt59krBabkI0QD0pBb58WEE2YbCxNuwuakqQBWOnXC0z/5ATgh/CywMKJicTttTUUfIt4b62eUJrpYm5qUA==",
+  "salt": "58CQkJ4qnyNOKQ==",
+  "displayName": "João Vitor",
+  "lastSignedInAt": "1749071076071",
+  "createdAt": "1744221644194",
+  "providerUserInfo": []
+},
+{
+  "localId": "5WXYUjNj8QcPt4hwBnvrwEUiRa83",
+  "email": "joaovitor.martinspetraglia@outlook.com",
+  "emailVerified": false,
+  "passwordHash": "Jsap2pZ1vNJ7Up/6rGx5L9v+YwKNI8z3JZuRD+24QMcuIpmIjGNfV06dNt8ExQkN0InzRYdLynmlPXF+H+rUEg==",
+  "salt": "f7svCmw38pZMqw==",
+  "displayName": "João Petraglia",
+  "lastSignedInAt": "1749071230660",
+  "createdAt": "1749062056220",
+  "providerUserInfo": []
+},
+{
+  "localId": "7cM9tCQay5gVQKyW2ShabNxrmIi2",
+  "email": "jurere@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "ZIc7cXy203003UZowWvGEFnJz7MosRfiXWyxVf1opAIv/YHP3pg/PSxa7nH6r0LHae0btIV+xVWcvHwejJeIDw==",
+  "salt": "fGEU0SAHGZX4Hg==",
+  "displayName": "Alexa",
+  "lastSignedInAt": "1747413952822",
+  "createdAt": "1745904734134",
+  "providerUserInfo": []
+},
+{
+  "localId": "CXQ5KP8XnlQpWtPk0W7qrJ4HOwt2",
+  "email": "tiagoventura727@gmail.com",
+  "emailVerified": true,
+  "displayName": "Tiago Ventura",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocLTBdZuzF4mzbumUrj2qtOhiZyKmKGSlBJCeKnu8-dHDbliCERf=s96-c",
+  "lastSignedInAt": "1740749909309",
+  "createdAt": "1740749909309",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "107473389708863491657",
+      "email": "tiagoventura727@gmail.com",
+      "displayName": "Tiago Ventura",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocLTBdZuzF4mzbumUrj2qtOhiZyKmKGSlBJCeKnu8-dHDbliCERf=s96-c"
+    }
+  ]
+},
+{
+  "localId": "Eb1DUGWhmqRB09pGgf3AwQGkH962",
+  "email": "mavicursos.sac@gmail.com",
+  "emailVerified": true,
+  "displayName": "Mavi",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocLANNu3i7dLeSH-fFsrBR6PEaa6vggGwafHa90kwG1BOlqQw9A=s96-c",
+  "lastSignedInAt": "1740766572189",
+  "createdAt": "1739996472396",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "104002069924582528466",
+      "email": "mavicursos.sac@gmail.com",
+      "displayName": "Mavi",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocLANNu3i7dLeSH-fFsrBR6PEaa6vggGwafHa90kwG1BOlqQw9A=s96-c"
+    }
+  ]
+},
+{
+  "localId": "HK7AXVmFaXh6jberM8KeuFHVVpw1",
+  "email": "duglas.tubino@gmail.com",
+  "emailVerified": true,
+  "displayName": "Nicolas Campos",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKt1QGa_MfPFt-gE77Jzphf89gB-FDaRJaDHAB2h79-PUemUxZ8=s96-c",
+  "lastSignedInAt": "1740695376764",
+  "createdAt": "1740695376763",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "100781253763921443550",
+      "email": "duglas.tubino@gmail.com",
+      "displayName": "Nicolas Campos",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKt1QGa_MfPFt-gE77Jzphf89gB-FDaRJaDHAB2h79-PUemUxZ8=s96-c"
+    }
+  ]
+},
+{
+  "localId": "HOu9baDZvugE5VYtPu40KbAVk2z1",
+  "email": "joao.vitormartinspetraglia@outlook.com",
+  "emailVerified": false,
+  "passwordHash": "1n142zJUP+fneyqQD1HKVX8FwR5dCY0Fzg8vyDYTLVbBdrnH3qK5ySMH1WsFTpJb8TeWtOVDvk+8MRVRTsWJmQ==",
+  "salt": "it/NBIidNbZNUQ==",
+  "lastSignedInAt": "1749071221973",
+  "createdAt": "1739996335685",
+  "disabled": false,
+  "providerUserInfo": []
+},
+{
+  "localId": "Hk1EslJb0JYPYITYgeNO6FcWxYZ2",
+  "email": "joao.martinspetraglia@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "VqlrNN10JVjrNH7+JMy791A11UJGtHfZ1RQUez6MYrAyfBdcFA4BN2be7BrslCf3/AOXly4SoJID9Xx+bfZsQQ==",
+  "salt": "imX/u6xh/Bx/Gw==",
+  "displayName": "Vitor",
+  "lastSignedInAt": "1744227021066",
+  "createdAt": "1744227021066",
+  "providerUserInfo": []
+},
+{
+  "localId": "NW4MsQ2jFdVQp9QM0MQReMl5pvo1",
+  "email": "joaovitormartinspetraglia@gmail.com",
+  "emailVerified": true,
+  "displayName": "João Petraglia",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocL1Dh6JZ3dPxZ4Sj8XhUC-FnNkhyHsHWWRWPpk9tN1nv0NcXug=s96-c",
+  "lastSignedInAt": "1745908369998",
+  "createdAt": "1740091676827",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "109411270009218014122",
+      "email": "joaovitormartinspetraglia@gmail.com",
+      "displayName": "João Petraglia",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocL1Dh6JZ3dPxZ4Sj8XhUC-FnNkhyHsHWWRWPpk9tN1nv0NcXug=s96-c"
+    }
+  ]
+},
+{
+  "localId": "QO4qRQg6fTXvM0TWmesaggSYe2L2",
+  "email": "fransantosfelix@hotmail.com",
+  "emailVerified": false,
+  "passwordHash": "WjxA5/OScNMo2qH+E8KLvKeX9vi5/A+kJXYYbIt6Mef+ujmpfHR3l/0cZSSE2RLbRNEdsTHBeZsdkXDdANe1tw==",
+  "salt": "eEjsZdxt1iy3fg==",
+  "displayName": "Francielma ",
+  "lastSignedInAt": "1749042834624",
+  "createdAt": "1748890285015",
+  "providerUserInfo": []
+},
+{
+  "localId": "ZcE4eoCCOKgEW8xCg1QEypdo36Y2",
+  "email": "dimitrifgauliacorp@gmail.com",
+  "emailVerified": true,
+  "displayName": "Dimitri",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocJfWFKGa9D35wOTYL6JcFhCu40JVydYfGpqC9zj6g6Bko5EWA=s96-c",
+  "lastSignedInAt": "1745946807370",
+  "createdAt": "1745946807369",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "118299222808162559994",
+      "email": "dimitrifgauliacorp@gmail.com",
+      "displayName": "Dimitri",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocJfWFKGa9D35wOTYL6JcFhCu40JVydYfGpqC9zj6g6Bko5EWA=s96-c"
+    }
+  ]
+},
+{
+  "localId": "cQYKI0GIl9cm154zzugPDwK8q353",
+  "email": "rosi.o.stos@gnail.com",
+  "emailVerified": false,
+  "passwordHash": "z1agSdur2NKqaqPY6v01BcZKdV1ey6Ax+bFRMrVqBiw4srFj5roOMvu95nFDal3MpxKm4/x8NFBHZKnbealUFQ==",
+  "salt": "aRaCCd6ZIhiaiQ==",
+  "displayName": "Rosi oliveira ",
+  "lastSignedInAt": "1748628553069",
+  "createdAt": "1748540796813",
+  "disabled": true,
+  "providerUserInfo": []
+},
+{
+  "localId": "dn4OwHWz6VPRn54KSVMp8M3l7m83",
+  "email": "coruj4aopl4ys@gmail.com",
+  "emailVerified": true,
+  "displayName": "Jonny Pet",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKKavH2jjpujsZg75r5j52w1DWII6lDw5s3v_U9NFtSjz6VsQ75=s96-c",
+  "lastSignedInAt": "1742433811795",
+  "createdAt": "1739994847393",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "116730605877602976088",
+      "email": "coruj4aopl4ys@gmail.com",
+      "displayName": "Jonny Pet",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKKavH2jjpujsZg75r5j52w1DWII6lDw5s3v_U9NFtSjz6VsQ75=s96-c"
+    }
+  ]
+},
+{
+  "localId": "fLwxBlJKwXNmzSyRKBY6PCrJYYc2",
+  "email": "indalecioolivo@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "oO0LlO32NpNZiMynY3GRObbeo0jm62BTJLxA4Uzuv/JovCvNwIm2Cwqm2bi4MqZTld3DoP+PqFpm1r8+QgRd5w==",
+  "salt": "Jj79IUzVyEWEhA==",
+  "lastSignedInAt": "1740445461134",
+  "createdAt": "1740445444705",
+  "disabled": false,
+  "providerUserInfo": []
+},
+{
+  "localId": "nLnktkNIGoaqYerqd8XZ33Nf4xh1",
+  "email": "joaocazzx@gmail.com",
+  "emailVerified": true,
+  "displayName": "joao martins",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocLP56n0fLvN4Mm6l4IC8CCitK_OfQEVURIxdtBThPFLPhCzOQ=s96-c",
+  "lastSignedInAt": "1740689655333",
+  "createdAt": "1739995456003",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "116153194657561547434",
+      "email": "joaocazzx@gmail.com",
+      "displayName": "joao martins",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocLP56n0fLvN4Mm6l4IC8CCitK_OfQEVURIxdtBThPFLPhCzOQ=s96-c"
+    }
+  ]
+},
+{
+  "localId": "uY0DBM3ri9ZMSulWo3gQXYm6CZl2",
+  "email": "julia.torres06@yahoo.com.br",
+  "emailVerified": false,
+  "passwordHash": "jPu67Id+jqX3IYv25KnAvjqq4EKjbrUI2tdTwM8CZ6Nvn353YBhuWJNf2Ph6Mc1VepDV6HYdmYpNL0xKrWXj/Q==",
+  "salt": "w9a9EIXzK34hzg==",
+  "displayName": "Julia Torres ",
+  "lastSignedInAt": "1749067022300",
+  "createdAt": "1748540642624",
+  "providerUserInfo": []
+},
+{
+  "localId": "xdjssljgyMatzk6ZbH479whRZ282",
+  "email": "leticiactm@hotmail.com",
+  "emailVerified": false,
+  "passwordHash": "nbwSHkLa6GywAVYSajw2VXiVMEuXIt2XXJkDT3zYVo2dwbYgmGECHDL+xMaB4Zz5iy4sjcn4/kBtI43GJVSn+w==",
+  "salt": "OROAt1JgoOWxvw==",
+  "displayName": "Letícia da Cunha Tavares Monteiro ",
+  "lastSignedInAt": "1748890569095",
+  "createdAt": "1748890569095",
+  "providerUserInfo": []
+},
+{
+  "localId": "yn3dU1PIPGNvpjDVAMCTMYN7ISn1",
+  "email": "rosi.o.stos@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "zXP9agBCX6/QUP5W+ewFDNDIN6/39xFD/Fu64o+j722Q8QiKPVjuSo1uZDGrVJqT86zNjpd+jfu0566znv0vRA==",
+  "salt": "BAQYXErc6+lPpg==",
+  "displayName": "Rosi",
+  "lastSignedInAt": "1749067021383",
+  "createdAt": "1748628600661",
+  "providerUserInfo": []
+}]}

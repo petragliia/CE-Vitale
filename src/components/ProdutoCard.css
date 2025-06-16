@@ -1,0 +1,169 @@
+.produto-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.produto-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.produto-card .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.produto-card-content {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.produto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.produto-nome {
+  margin: 0;
+  flex: 1;
+  font-size: 16px;
+  line-height: 1.4;
+  min-height: 44px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.status-tag {
+  margin-left: 8px;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.produto-info {
+  margin: 12px 0;
+  flex: 1;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.quantidade {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.produto-actions {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Estilos para o ribbon de categoria */
+.categoria-ribbon {
+  margin-bottom: 8px;
+}
+
+.categoria-ribbon .ant-ribbon {
+  font-size: 12px;
+  font-weight: 500;
+  height: 24px;
+  line-height: 24px;
+}
+
+/* Estilos para telas menores */
+@media (max-width: 768px) {
+  .produto-card {
+    margin-bottom: 16px;
+  }
+  
+  .produto-nome {
+    font-size: 15px;
+  }
+  
+  .info-item {
+    font-size: 13px;
+  }
+  
+  .quantidade {
+    font-size: 15px;
+  }
+  
+  .produto-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .produto-actions .ant-btn {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+}
+
+/* Efeito de hover nos botões de ação */
+.produto-actions .ant-btn:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para o card quando o estoque está crítico */
+.produto-card.estoque-critico {
+  border-left: 3px solid #ff4d4f;
+}
+
+/* Estilo para o card quando o estoque está baixo */
+.produto-card.estoque-baixo {
+  border-left: 3px solid #faad14;
+}
+
+/* Estilo para o card quando o produto está próximo do vencimento */
+.produto-card.proximo-vencimento {
+  border-left: 3px solid #ffa940;
+}
+
+/* Efeito de hover para os botões de ação */
+.produto-actions .ant-btn:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Ajustes para o ícone de quantidade */
+.quantidade-icon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+/* Estilo para o texto de quantidade quando está crítico */
+.quantidade-critica {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+/* Estilo para o texto de quantidade quando está baixo */
+.quantidade-baixa {
+  color: #faad14;
+  font-weight: 500;
+}

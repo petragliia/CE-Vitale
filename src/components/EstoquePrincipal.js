@@ -1,40 +1,50 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { 
-  Table, Button, Form, Modal, Input, DatePicker, Select, 
-  Tooltip, Badge, Popconfirm, Tag, Space, 
-  Empty, Drawer, message, AutoComplete
+  Button, Modal, Input, DatePicker, Select, 
+  Tooltip, Badge, Tag, Space, 
+  Empty, Drawer, message, AutoComplete, Form,
+  Table, Popconfirm
 } from "antd";
 import { 
   PlusOutlined, FilterOutlined, ReloadOutlined, 
-  EditOutlined, DeleteOutlined, 
-  LogoutOutlined,
-  InboxOutlined, MedicineBoxOutlined, CoffeeOutlined, EyeOutlined,
-  WarningOutlined, SwapOutlined, SearchOutlined
+  SearchOutlined, 
+  InboxOutlined, MedicineBoxOutlined, CoffeeOutlined,
+  WarningOutlined, SwapOutlined,
+  EyeOutlined, EditOutlined, DeleteOutlined, LogoutOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebaseConfig";
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip as ChartTooltip, Legend } from "chart.js";
+import Chart from 'chart.js/auto';
+import { 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Tooltip as ChartTooltip, 
+  Legend 
+} from 'chart.js';
 import moment from "moment";
 import { stocks } from "../stocks";
+import { registrarOperacao } from "../services/registroService";
+import Transferencia from './Transferencia';
 import "./EstoquePrincipal.css";
 import "./estoques-comum.css";
 import "./date-picker-mobile.css";
-import { registrarOperacao } from "../services/registroService";
-import Transferencia from './Transferencia';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ChartTooltip, Legend);
+// Register the components
+Chart.register(CategoryScale, LinearScale, BarElement, ChartTooltip, Legend);
 
-// Constantes para ícones de categoria
+// VIEW_TYPES removido pois não está sendo usado no momento
+// Chart components are now registered at the top of the file after imports
+
 const CATEGORIA_ICONS = {
   Medicamentos: <MedicineBoxOutlined />,
   Insumos: <InboxOutlined />,
   Comida: <CoffeeOutlined />
 };
 
-// Configuração para notificações de estoque
 const ESTOQUE_MINIMO = 5;
 const ESTOQUE_BAIXO = 10;
 
@@ -46,9 +56,13 @@ function EstoquePrincipal() {
   const [carregando, setCarregando] = useState(false);
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState("todos");
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  // operacaoAjuste e setOperacaoAjuste comentados pois não estão sendo usados no momento
+  // const [operacaoAjuste, setOperacaoAjuste] = useState('adicionar');
   const [estatisticas, setEstatisticas] = useState({
     total: 0,
     estoqueBaixo: 0,
+    estoqueCritico: 0,
     valorTotal: 0,
     porCategoria: {}
   });
@@ -56,11 +70,22 @@ function EstoquePrincipal() {
   // Estado para gerenciar modais e drawers
   const [modalVisible, setModalVisible] = useState(false);
   const [drawerDetalhesVisible, setDrawerDetalhesVisible] = useState(false);
-  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   const [produtoEditando, setProdutoEditando] = useState(null);
   const [mostrarGrafico, setMostrarGrafico] = useState(true);
   const [form] = Form.useForm();
   const [transferenciaModalVisible, setTransferenciaModalVisible] = useState(false);
+  const [produtoDuplicadoModalVisible, setProdutoDuplicadoModalVisible] = useState(false);
+  const [novosDadosProduto, setNovosDadosProduto] = useState(null);
+  const [produtoExistente, setProdutoExistente] = useState(null);
+  
+  // Estados para filtros avançados
+  const [filtrosAvancados] = useState({
+    quantidadeMin: null,
+    quantidadeMax: null,
+    validadeInicio: null,
+    validadeFim: null
+  });
+  const [mostrarFiltrosAvancados] = useState(false);
   
   // Estados para filtros
   const [filtroAvancado, setFiltroAvancado] = useState(false);
@@ -220,21 +245,23 @@ function EstoquePrincipal() {
   const calcularEstatisticas = useCallback((produtosData) => {
     const estatisticasNovas = {
       total: produtosData.length,
-      estoqueBaixo: produtosData.filter(p => p.quantidade < ESTOQUE_MINIMO).length,
-      valorTotal: produtosData.reduce((total, p) => total + (p.valor * p.quantidade), 0),
+      estoqueBaixo: produtosData.filter(p => p.quantidade < ESTOQUE_BAIXO && p.quantidade >= ESTOQUE_MINIMO).length,
+      estoqueCritico: produtosData.filter(p => p.quantidade < ESTOQUE_MINIMO).length,
+      valorTotal: produtosData.reduce((total, p) => total + ((p.valor || 0) * (p.quantidade || 0)), 0),
       porCategoria: {}
     };
     
     // Calcular total por categoria
     produtosData.forEach(produto => {
-      if (!estatisticasNovas.porCategoria[produto.categoria]) {
-        estatisticasNovas.porCategoria[produto.categoria] = {
+      const categoria = produto.categoria || 'Outros';
+      if (!estatisticasNovas.porCategoria[categoria]) {
+        estatisticasNovas.porCategoria[categoria] = {
           quantidade: 0,
           valor: 0
         };
       }
-      estatisticasNovas.porCategoria[produto.categoria].quantidade += produto.quantidade;
-      estatisticasNovas.porCategoria[produto.categoria].valor += (produto.valor * produto.quantidade);
+      estatisticasNovas.porCategoria[categoria].quantidade += Number(produto.quantidade || 0);
+      estatisticasNovas.porCategoria[categoria].valor += ((produto.valor || 0) * (produto.quantidade || 0));
     });
     
     setEstatisticas(estatisticasNovas);
@@ -244,41 +271,80 @@ function EstoquePrincipal() {
   const carregarProdutos = useCallback(async () => {
     try {
       setCarregando(true);
-      const querySnapshot = await getDocs(collection(db, collectionName));
       
-      const produtosData = querySnapshot.docs.map(doc => {
-        const dados = doc.data();
-        return {
-          ...dados,
-          id: doc.id,
-          validade: dados.validade?.toDate(),
-          quantidade: Number(dados.quantidade || 0),
-          valor: Number(dados.valor || 0)
-        };
+      // Construir a query base
+      let q;
+      if (categoriaAtiva && categoriaAtiva !== "todos") {
+        q = query(collection(db, collectionName), where("categoria", "==", categoriaAtiva));
+      } else {
+        q = collection(db, collectionName);
+      }
+      
+      const querySnapshot = await getDocs(q);
+      const produtosData = [];
+      
+      querySnapshot.forEach((doc) => {
+        produtosData.push({ id: doc.id, ...doc.data() });
       });
       
       setProdutos(produtosData);
-      setProdutosFiltrados(produtosData);
-      calcularEstatisticas(produtosData);
       
-      // Verificar produtos com estoque baixo
-      const produtosBaixos = produtosData.filter(p => p.quantidade < ESTOQUE_MINIMO);
-      if (produtosBaixos.length > 0) {
-        message.warning({
-          content: `${produtosBaixos.length} produtos com estoque crítico!`,
-          icon: <WarningOutlined style={{ color: "#faad14" }} />,
-          duration: 5
-        });
+      // Aplicar filtros adicionais
+      let resultadoFiltrado = [...produtosData];
+      
+      // Filtro por termo de busca
+      if (busca) {
+        const termo = busca.toLowerCase();
+        resultadoFiltrado = resultadoFiltrado.filter(
+          p => p.nome?.toLowerCase().includes(termo) || 
+               p.fornecedor?.toLowerCase().includes(termo) ||
+               p.lote?.toLowerCase().includes(termo)
+        );
       }
+      
+      // Aplicar filtros avançados
+      if (mostrarFiltrosAvancados) {
+        if (filtrosAvancados.quantidadeMin) {
+          resultadoFiltrado = resultadoFiltrado.filter(p => 
+            Number(p.quantidade) >= Number(filtrosAvancados.quantidadeMin)
+          );
+        }
+        
+        if (filtrosAvancados.quantidadeMax) {
+          resultadoFiltrado = resultadoFiltrado.filter(p => 
+            Number(p.quantidade) <= Number(filtrosAvancados.quantidadeMax)
+          );
+        }
+        
+        if (filtrosAvancados.validadeInicio) {
+          resultadoFiltrado = resultadoFiltrado.filter(p => 
+            p.validade && moment(p.validade.toDate()).isSameOrAfter(filtrosAvancados.validadeInicio, 'day')
+          );
+        }
+        
+        if (filtrosAvancados.validadeFim) {
+          resultadoFiltrado = resultadoFiltrado.filter(p => 
+            p.validade && moment(p.validade.toDate()).isSameOrBefore(filtrosAvancados.validadeFim, 'day')
+          );
+        }
+      }
+      
+      // Ordenar por nome por padrão
+      resultadoFiltrado.sort((a, b) => a.nome?.localeCompare(b.nome));
+      
+      setProdutosFiltrados(resultadoFiltrado);
+      
+      // Atualizar estatísticas
+      calcularEstatisticas(produtosData);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
-      message.error(typeof error.message === 'string' ? `Erro ao carregar produtos: ${error.message}` : "Erro ao carregar produtos");
+      message.error("Erro ao carregar produtos. Tente novamente mais tarde.");
     } finally {
       setCarregando(false);
     }
-  }, [collectionName, calcularEstatisticas]);
-
-  // Carregar produtos ao iniciar
+  }, [busca, categoriaAtiva, mostrarFiltrosAvancados, filtrosAvancados, collectionName, calcularEstatisticas]);
+  
+  
   useEffect(() => {
     if (currentUser) {
       carregarProdutos();
@@ -428,7 +494,76 @@ function EstoquePrincipal() {
     if (produtoEditando) {
       atualizarProduto(values);
     } else {
-      adicionarProduto(values);
+      // Verificar se já existe produto com mesmo nome antes de adicionar
+      const produtoExistenteComMesmoNome = produtos.find(
+        (produto) => produto.nome.toLowerCase() === values.nome.toLowerCase()
+      );
+
+      if (produtoExistenteComMesmoNome) {
+        // Encontrou um produto com mesmo nome
+        setProdutoExistente(produtoExistenteComMesmoNome);
+        setNovosDadosProduto(values);
+        setProdutoDuplicadoModalVisible(true);
+      } else {
+        // Produto é novo, adicionar normalmente
+        adicionarProduto(values);
+      }
+    }
+  };
+  
+  // Função para confirmar adição de nova leva
+  const confirmarNovaLeva = () => {
+    if (novosDadosProduto) {
+      adicionarProduto(novosDadosProduto);
+      setProdutoDuplicadoModalVisible(false);
+      setNovosDadosProduto(null);
+      setProdutoExistente(null);
+    }
+  };
+
+  // Função para adicionar quantidade ao item existente
+  const adicionarAoExistente = async () => {
+    try {
+      if (!produtoExistente || !novosDadosProduto) {
+        message.error("Dados do produto não encontrados");
+        return;
+      }
+
+      setCarregando(true);
+      
+      // Atualizar o produto existente com a quantidade adicional
+      const docRef = doc(db, collectionName, produtoExistente.id);
+      await updateDoc(docRef, {
+        quantidade: Number(produtoExistente.quantidade) + Number(novosDadosProduto.quantidade),
+        updatedAt: new Date()
+      });
+      
+      await registrarOperacao(
+        currentUser.email,
+        'adicao_lote',
+        produtoExistente.nome,
+        'Estoque Principal',
+        null,
+        novosDadosProduto.quantidade,
+        {
+          categoria: produtoExistente.categoria,
+          valor: produtoExistente.valor,
+          validade: produtoExistente.validade ? moment(produtoExistente.validade).format('DD/MM/YYYY') : 'N/A'
+        }
+      );
+      
+      message.success("Quantidade adicionada ao produto existente com sucesso!");
+      await carregarProdutos();
+      setProdutoDuplicadoModalVisible(false);
+      setModalVisible(false);
+      setNovosDadosProduto(null);
+      setProdutoExistente(null);
+      form.resetFields();
+    } catch (error) {
+      console.error('Erro ao atualizar quantidade do produto:', error);
+      message.error(typeof error.message === 'string' ? `Erro ao atualizar quantidade: ${error.message}` : "Erro ao atualizar quantidade");
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -660,7 +795,9 @@ function EstoquePrincipal() {
           </Button>
           <Button 
             icon={<FilterOutlined />} 
-            onClick={() => setFiltroAvancado(!filtroAvancado)}>
+            onClick={() => setFiltroAvancado(!filtroAvancado)}
+            data-testid="filtros-button"
+            aria-label="filtros avançados">
             {filtroAvancado ? 'Ocultar Filtros' : 'Mostrar Filtros'}
           </Button>
           <Button 
@@ -670,6 +807,7 @@ function EstoquePrincipal() {
           </Button>
           <Button 
             icon={<SwapOutlined />}
+            data-testid="toggle-view-button"
             onClick={handleOpenTransferencia}>
             Transferir
           </Button>
@@ -682,10 +820,14 @@ function EstoquePrincipal() {
             <AutoComplete
               style={{ flex: 1 }}
               value={busca}
-              onChange={(value) => setBusca(value)}
+              onChange={(value) => {
+                setBusca(value);
+                handleBusca(value); // Atualiza a lista em tempo real
+              }}
               options={getSugestoesBusca().map((sugestao) => ({ value: sugestao }))}
               onSelect={(value) => handleBusca(value)}
-              placeholder="Buscar por nome, código, fornecedor..."
+              placeholder="Buscar produtos"  
+              data-testid="search-input"
               size="large"
             />
             <Button 
@@ -713,65 +855,94 @@ function EstoquePrincipal() {
                     placeholder="Buscar por nome"
                     value={filtros.nome}
                     onChange={(e) => setFiltros({...filtros, nome: e.target.value})}
+                    data-testid="nome-input"
                   />
                 </Form.Item>
               </Form>
               <Form layout="vertical">
                 <Form.Item label="Fornecedor">
                   <Input
+                    aria-label="Fornecedor"
                     placeholder="Buscar por fornecedor"
                     value={filtros.fornecedor}
                     onChange={(e) => setFiltros({...filtros, fornecedor: e.target.value})}
+                    data-testid="fornecedor-input"
                   />
                 </Form.Item>
               </Form>
               <Form layout="vertical">
                 <Form.Item label="Preço Mínimo (R$)">
                   <Input
+                    aria-label="Preço Mínimo"
                     type="number"
                     placeholder="Preço mínimo"
                     value={filtros.precoMin}
                     onChange={(e) => setFiltros({...filtros, precoMin: e.target.value})}
+                    data-testid="preco-min-input"
                   />
                 </Form.Item>
               </Form>
               <Form layout="vertical">
                 <Form.Item label="Preço Máximo (R$)">
                   <Input
+                    aria-label="Preço Máximo"
                     type="number"
                     placeholder="Preço máximo"
                     value={filtros.precoMax}
                     onChange={(e) => setFiltros({...filtros, precoMax: e.target.value})}
+                    data-testid="preco-max-input"
                   />
                 </Form.Item>
               </Form>
               <Form layout="vertical">
                 <Form.Item label="Quantidade Mínima">
                   <Input
+                    aria-label="Quantidade Mínima"
                     type="number"
                     placeholder="Quantidade mínima"
                     value={filtros.quantidadeMin}
                     onChange={(e) => setFiltros({...filtros, quantidadeMin: e.target.value})}
+                    data-testid="quantidade-min-input"
                   />
                 </Form.Item>
               </Form>
               <Form layout="vertical">
                 <Form.Item label="Quantidade Máxima">
                   <Input
+                    aria-label="Quantidade Máxima"
                     type="number"
                     placeholder="Quantidade máxima"
                     value={filtros.quantidadeMax}
                     onChange={(e) => setFiltros({...filtros, quantidadeMax: e.target.value})}
+                    data-testid="quantidade-max-input"
                   />
+                </Form.Item>
+              </Form>
+              <Form layout="vertical">
+                <Form.Item label="Categoria">
+                  <Select
+                    aria-label="Categoria"
+                    placeholder="Selecione..."
+                    value={filtros.categoria}
+                    onChange={(value) => setFiltros({...filtros, categoria: value})}
+                    allowClear
+                    data-testid="categoria-select"
+                  >
+                    <Select.Option value="Medicamentos">Medicamentos</Select.Option>
+                    <Select.Option value="Insumos">Insumos</Select.Option>
+                    <Select.Option value="Comida">Comida</Select.Option>
+                  </Select>
                 </Form.Item>
               </Form>
               <Form layout="vertical">
                 <Form.Item label="Ordenar por Validade">
                   <Select
+                    aria-label="Ordenar por Validade"
                     placeholder="Selecione a ordem"
                     value={filtros.validadeOrdem}
                     onChange={(value) => setFiltros({...filtros, validadeOrdem: value})}
                     allowClear
+                    data-testid="validade-ordem-select"
                   >
                     <Select.Option value="asc">Do mais antigo ao mais recente</Select.Option>
                     <Select.Option value="desc">Do mais recente ao mais antigo</Select.Option>
@@ -802,12 +973,14 @@ function EstoquePrincipal() {
                   aplicarFiltros(busca, filtros, produtos, categoriaAtiva);
                 }}
                 type="primary"
-              >
+                data-testid="aplicar-filtros-button"
+                aria-label="filtros avançados">
                 Aplicar Filtros
               </Button>
               <Button 
                 onClick={limparFiltros}
-              >
+                data-testid="limpar-filtros-button"
+                aria-label="limpar filtros">
                 Limpar Filtros
               </Button>
             </div>
@@ -1021,6 +1194,84 @@ function EstoquePrincipal() {
         onCancel={handleCloseTransferencia}
         visible={transferenciaModalVisible}
       />
+
+      {/* Modal de confirmação para produtos duplicados */}
+      <Modal
+        title="Produto com Nome Duplicado"
+        open={produtoDuplicadoModalVisible}
+        footer={null}
+        onCancel={() => {
+          setProdutoDuplicadoModalVisible(false);
+          setNovosDadosProduto(null);
+          setProdutoExistente(null);
+        }}
+        width={600}
+      >
+        <div style={{ marginBottom: 20 }}>
+          <h4 style={{ color: '#1976d2' }}>Um produto com o mesmo nome já existe no estoque:</h4>
+          
+          {produtoExistente && (
+            <div className="produto-existente-info" style={{ 
+              backgroundColor: '#f5f5f5', 
+              padding: 16, 
+              borderRadius: 8,
+              marginBottom: 16 
+            }}>
+              <div><strong>Nome:</strong> {produtoExistente.nome}</div>
+              <div><strong>Categoria:</strong> {produtoExistente.categoria}</div>
+              <div><strong>Quantidade atual:</strong> {produtoExistente.quantidade} {produtoExistente.tipoQuantidade}</div>
+              <div><strong>Preço:</strong> R$ {Number(produtoExistente.valor).toFixed(2)}</div>
+              <div><strong>Validade:</strong> {produtoExistente.validade ? moment(produtoExistente.validade).format('DD/MM/YYYY') : 'Sem validade'}</div>
+              <div><strong>Fornecedor:</strong> {produtoExistente.fornecedor || 'N/A'}</div>
+            </div>
+          )}
+          
+          {novosDadosProduto && (
+            <div className="novos-dados-info" style={{ 
+              backgroundColor: '#e6f7ff', 
+              padding: 16, 
+              borderRadius: 8 
+            }}>
+              <h4>Dados do novo produto:</h4>
+              <div><strong>Quantidade:</strong> {novosDadosProduto.quantidade} {novosDadosProduto.tipoQuantidade}</div>
+              <div><strong>Preço:</strong> R$ {Number(novosDadosProduto.valor).toFixed(2)}</div>
+              <div><strong>Validade:</strong> {novosDadosProduto.validade ? moment(novosDadosProduto.validade).format('DD/MM/YYYY') : 'Sem validade'}</div>
+            </div>
+          )}
+        </div>
+        
+        <p>O que deseja fazer com este produto?</p>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
+          <Button 
+            onClick={() => {
+              setProdutoDuplicadoModalVisible(false);
+              setNovosDadosProduto(null);
+              setProdutoExistente(null);
+            }}
+          >
+            Cancelar
+          </Button>
+          
+          <Space>
+            <Button 
+              type="primary"
+              onClick={adicionarAoExistente}
+              loading={carregando}
+            >
+              Adicionar quantidade ao existente
+            </Button>
+            
+            <Button 
+              type="default"
+              onClick={confirmarNovaLeva}
+              loading={carregando}
+            >
+              Adicionar como nova leva
+            </Button>
+          </Space>
+        </div>
+      </Modal>
 
       {/* Drawer de detalhes do produto */}
       <Drawer

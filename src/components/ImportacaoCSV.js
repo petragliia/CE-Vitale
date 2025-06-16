@@ -347,10 +347,10 @@ function ImportacaoCSV() {
             value={targetCollection}
             onChange={setTargetCollection}
           >
-            <Option value={stocks.reposicao}>Reposição de Consultórios</Option>
-            <Option value={stocks.principal}>Estoque Principal</Option>
-            <Option value={stocks.vet}>Estoque Veterinário</Option>
-            <Option value={stocks.internacao}>Internação</Option>
+            <Option value={stocks.reposicao || ''}>Reposição de Consultórios</Option>
+            <Option value={stocks.principal || ''}>Estoque Principal</Option>
+            <Option value={stocks.vet || ''}>Estoque Veterinário</Option>
+            <Option value={stocks.internacao || ''}>Internação</Option>
           </Select>
           
           <Dragger
@@ -379,7 +379,7 @@ function ImportacaoCSV() {
       {/* Modal para mapear campos do CSV */}
       <Modal
         title="Mapear Campos"
-        visible={mappingVisible}
+        open={mappingVisible}
         onOk={handlePreview}
         onCancel={() => setMappingVisible(false)}
         width={700}
@@ -399,9 +399,13 @@ function ImportacaoCSV() {
               value={mapping[field.value]}
               onChange={value => setMapping({...mapping, [field.value]: value})}
             >
-              {headers.map(header => (
-                <Option key={header} value={header}>{header}</Option>
-              ))}
+              {headers
+                .filter(header => header !== null && header !== undefined)
+                .map(header => (
+                  <Option key={header || 'empty'} value={header || ''}>
+                    {header || '(Sem nome)'}
+                  </Option>
+                ))}
             </Select>
           </div>
         ))}
@@ -410,7 +414,7 @@ function ImportacaoCSV() {
       {/* Modal para visualização prévia dos dados */}
       <Modal
         title="Visualização de Dados"
-        visible={previewVisible}
+        open={previewVisible}
         onOk={importData}
         onCancel={() => setPreviewVisible(false)}
         width={900}
@@ -427,11 +431,11 @@ function ImportacaoCSV() {
               Este arquivo tem um formato especial e será importado com as seguintes considerações:
             </p>
             <ul>
-              <li>Nome do produto: coluna "Nome dos produtos"</li>
-              <li>Quantidade: coluna "Qtde"</li>
-              <li>Fornecedor: coluna "Fornecedores"</li>
-              <li>Unidade: coluna "Un."</li>
-              <li>Categoria padrão: "Importado de Estoque Geral"</li>
+              <li>Nome do produto: coluna &quot;Nome dos produtos&quot;</li>
+              <li>Quantidade: coluna &quot;Qtde&quot;</li>
+              <li>Fornecedor: coluna &quot;Fornecedores&quot;</li>
+              <li>Unidade: coluna &quot;Un.&quot;</li>
+              <li>Categoria padrão: &quot;Importado de Estoque Geral&quot;</li>
               <li>Os itens sem nome serão ignorados</li>
             </ul>
           </div>

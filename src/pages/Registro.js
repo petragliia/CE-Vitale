@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Typography, Space, Button, Input, Card, Spin } from 'antd';
-import { SearchOutlined, ReloadOutlined, HistoryOutlined } from '@ant-design/icons';
+import { Table, Typography, Space, Button, Input, Card, Spin, Popconfirm, message } from 'antd';
+import { SearchOutlined, ReloadOutlined, HistoryOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { obterRegistros, formatarMensagem } from '../services/registroService';
+import { obterRegistros, formatarMensagem, excluirRegistro } from '../services/registroService';
+import { useAuth } from '../context/AuthContext';
 import './Registro.css';
 
 const { Title, Text } = Typography;
@@ -12,7 +13,9 @@ function Registro() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
+  const { currentUser, userRole } = useAuth();
 
   useEffect(() => {
     carregarRegistros();
@@ -49,6 +52,30 @@ function Registro() {
     return formatador(registro);
   };
 
+  // Função para excluir um registro (somente admin)
+  const handleDeleteRegistro = async (id) => {
+    if (!currentUser || userRole !== 'admin') {
+      message.error('Apenas administradores podem excluir registros');
+      return;
+    }
+
+    try {
+      setDeletingId(id);
+      const result = await excluirRegistro(id, currentUser.email);
+      if (result.success) {
+        message.success('Registro excluído com sucesso');
+        await carregarRegistros();
+      } else {
+        message.error('Erro ao excluir registro');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir registro:', error);
+      message.error('Erro ao processar a exclusão');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const columns = [
     {
       title: 'Data',
@@ -67,11 +94,38 @@ function Registro() {
     {
       title: 'Operação',
       key: 'operacao',
-      width: '65%',
+      width: '60%',
       render: (_, registro) => (
         <span>{formatarMensagemOperacao(registro)}</span>
       ),
     },
+    // Coluna de ações (visível apenas para admins)
+    ...(userRole === 'admin' ? [
+      {
+        title: 'Ações',
+        key: 'action',
+        width: '5%',
+        render: (_, registro) => (
+          <Space>
+            <Popconfirm
+              title="Tem certeza que deseja excluir este registro?"
+              description="Esta ação não pode ser desfeita."
+              onConfirm={() => handleDeleteRegistro(registro.id)}
+              okText="Sim"
+              cancelText="Não"
+            >
+              <Button 
+                danger 
+                icon={<DeleteOutlined />} 
+                size="small" 
+                loading={deletingId === registro.id}
+                title="Excluir registro"
+              />
+            </Popconfirm>
+          </Space>
+        ),
+      }
+    ] : []),
   ];
 
   const handleSearch = (e) => {

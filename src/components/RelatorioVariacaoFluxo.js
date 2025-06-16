@@ -63,7 +63,7 @@ function RelatorioVariacaoFluxo() {
       title: 'Item',
       dataIndex: 'nome',
       key: 'nome',
-      render: (texto, registro) => (
+      render: (texto) => (
         <Text strong>{texto}</Text>
       )
     },
@@ -84,7 +84,7 @@ function RelatorioVariacaoFluxo() {
       dataIndex: 'variacao',
       key: 'variacao',
       align: 'center',
-      render: (valor, registro) => (
+      render: (valor) => (
         <Text style={{ color: valor > 0 ? '#52c41a' : '#f5222d' }}>
           {valor > 0 ? '+' : ''}{valor}
         </Text>

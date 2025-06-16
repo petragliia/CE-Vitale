@@ -2,6 +2,22 @@
   "name": "vitale-controle-estoque",
   "version": "0.1.0",
   "private": true,
+  "devDependencies": {
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-react": "^7.27.1",
+    "@eslint/js": "^9.29.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.2.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "mysql2": "^3.14.1",
+    "typescript-eslint": "^8.34.0"
+  },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
     "@capacitor/android": "^4.7.1",
@@ -11,12 +27,14 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "antd": "^5.6.1",
-    "chart.js": "^4.3.0",
+    "chart.js": "^4.4.9",
     "firebase": "^9.22.2",
+    "firebase-tools": "^14.5.1",
+    "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "papaparse": "^5.5.2",
     "react": "^18.2.0",
-    "react-chartjs-2": "^5.2.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.12.1",
     "react-scripts": "5.0.1",
@@ -25,8 +43,43 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest --watchAll --verbose",
+    "test:mysql": "jest --setupFilesAfterEnv=./jest.mysql.setup.js --testMatch=\"**/src/**/__tests__/**/*.test.js\"",
+    "test:coverage": "jest --coverage",
+    "test:update": "jest --updateSnapshot",
     "eject": "react-scripts eject"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "\\.(css|less|scss|sass)$": "<rootDir>/__mocks__/styleMock.js",
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js"
+    },
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/.next/"
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(antd|@ant-design|rc-.+|@babel/runtime|@ant-design/icons)/).+\\.(js|jsx|ts|tsx)$"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "json"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.[jt]s?(x)"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/index.js",
+      "!src/serviceWorker.js",
+      "!src/reportWebVitals.js"
+    ]
   },
   "eslintConfig": {
     "extends": [

@@ -16,5 +16,33 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8090
+    },
+    "database": {
+      "port": 9090
+    },
+    "hosting": {
+      "port": 5050
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4040
+    },
+    "hub": {
+      "port": 4444
+    },
+    "logging": {
+      "port": 4555
+    },
+    "singleProjectMode": true,
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    }
   }
 }

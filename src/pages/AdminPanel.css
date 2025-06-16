@@ -1,0 +1,137 @@
+.admin-panel {
+  padding: 20px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.admin-header {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.admin-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-table {
+  margin-top: 20px;
+}
+
+.admin-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 40px 0;
+  gap: 16px;
+}
+
+.admin-filter-section {
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.status-tag-approved {
+  background-color: #52c41a;
+  color: white;
+}
+
+.status-tag-pending {
+  background-color: #1890ff;
+  color: white;
+}
+
+.status-tag-rejected {
+  background-color: #f5222d;
+  color: white;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+  .admin-panel {
+    padding: 10px;
+  }
+  
+  .admin-header {
+    padding: 10px;
+  }
+  
+  .ant-table {
+    overflow-x: auto;
+  }
+  
+  .ant-table-thead > tr > th, 
+  .ant-table-tbody > tr > td {
+    padding: 8px;
+  }
+  
+  .admin-loading {
+    margin: 20px 0;
+  }
+}
+
+/* Responsividade específica para celulares */
+@media (max-width: 576px) {
+  .admin-panel {
+    padding: 5px;
+  }
+  
+  .admin-header .ant-space {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  .admin-header .ant-space .ant-btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  
+  .admin-header {
+    padding: 10px;
+  }
+  
+  .admin-header > div {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .admin-header .ant-typography {
+    margin-bottom: 10px !important;
+  }
+  
+  .ant-table-thead > tr > th, 
+  .ant-table-tbody > tr > td {
+    padding: 6px 4px;
+    font-size: 0.9rem;
+  }
+  
+  /* Ajuste para botões de ações em telas de celular */
+  .ant-table-cell .ant-space {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 375px) {
+  .ant-table-thead > tr > th, 
+  .ant-table-tbody > tr > td {
+    padding: 4px 2px;
+    font-size: 0.85rem;
+  }
+  
+  .ant-table-cell .ant-btn {
+    padding: 0 4px;
+    height: 24px;
+    font-size: 0.85rem;
+  }
+}

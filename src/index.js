@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { db, auth } from './firebaseConfig';
+import './bugfinder'; // Importando o monitorador de erros
 
 // Teste de conexão com o Firebase
 console.log("Firebase inicializado:", !!db, !!auth);

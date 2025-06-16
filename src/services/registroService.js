@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
 const COLLECTION_NAME = 'registros';
@@ -72,6 +72,38 @@ export const obterRegistros = async (limite = 100) => {
 /**
  * Formatadores de mensagens para diferentes tipos de operações
  */
+/**
+ * Exclui um registro de operação - APENAS PARA ADMINISTRADORES
+ * @param {string} registroId - ID do registro a ser excluído
+ * @param {string} usuarioEmail - Email do usuário que está excluindo (para registro de auditoria)
+ * @returns {Promise} - Promise com o resultado da operação
+ */
+export const excluirRegistro = async (registroId, usuarioEmail) => {
+  try {
+    // Primeiro registra a exclusão como uma nova operação (para auditoria)
+    await registrarOperacao(
+      usuarioEmail,
+      'exclusao_registro',
+      `Registro ID: ${registroId}`,
+      'Sistema de Registros',
+      null,
+      null,
+      {
+        detalhes: 'Exclusão de registro pelo administrador'
+      }
+    );
+
+    // Depois exclui o registro original
+    const registroRef = doc(db, COLLECTION_NAME, registroId);
+    await deleteDoc(registroRef);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao excluir registro:', error);
+    return { success: false, error };
+  }
+};
+
 export const formatarMensagem = {
   adicao: (registro) => 
     `${registro.usuarioEmail} adicionou ${registro.quantidade} ${registro.item} no ${registro.origem} às ${registro.dataFormatada.split(' ')[1]}.`,
@@ -91,6 +123,9 @@ export const formatarMensagem = {
   logout: (registro) => 
     `${registro.usuarioEmail} saiu do sistema às ${registro.dataFormatada.split(' ')[1]}.`,
   
+  exclusao_registro: (registro) => 
+    `${registro.usuarioEmail} excluiu um registro de operação às ${registro.dataFormatada.split(' ')[1]}.`,
+
   // Função genérica para outros tipos de operações
   default: (registro) => 
     `${registro.usuarioEmail} realizou operação ${registro.tipoOperacao} com ${registro.item} em ${registro.origem} às ${registro.dataFormatada.split(' ')[1]}.`

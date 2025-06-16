@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Row, Col, List, Typography, Spin, Space, Tooltip, Modal, Divider, notification, Dropdown, Alert, Badge } from "antd";
+import { Button, Card, Row, Col, List, Typography, Spin, Space, Tooltip, Modal, Divider, notification, Dropdown, Alert, Badge, Tag } from "antd";
 import { useAuth } from "../context/AuthContext";
 import { 
   HistoryOutlined, 
@@ -15,7 +15,8 @@ import {
   ImportOutlined,
   SettingOutlined,
   BarChartOutlined,
-  WarningOutlined
+  WarningOutlined,
+  TeamOutlined
 } from "@ant-design/icons";
 import { obterRegistros, formatarMensagem } from "../services/registroService";
 import { gerarRelatorioGeral, analisarVariacaoFluxo } from "../services/relatorioService";
@@ -26,7 +27,7 @@ const { Title, Text } = Typography;
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { currentUser, logout, displayName } = useAuth();
+  const { currentUser, logout, displayName, isAdmin } = useAuth();
   const [registrosRecentes, setRegistrosRecentes] = useState([]);
   const [carregandoRegistros, setCarregandoRegistros] = useState(true);
   const [relatorioVisivel, setRelatorioVisivel] = useState(false);
@@ -196,7 +197,19 @@ function Dashboard() {
       icon: <ImportOutlined />,
       label: "Importar Dados (CSV)",
       onClick: () => navigate("/importacao-csv")
-    }
+    },
+    // Adicionar separador e opção de administração apenas para administradores
+    ...(isAdmin() ? [
+      {
+        type: "divider"
+      },
+      {
+        key: "admin",
+        icon: <TeamOutlined />,
+        label: "Painel Administrativo",
+        onClick: () => navigate("/admin")
+      }
+    ] : [])
   ];
 
   const fecharRelatorio = () => {
@@ -245,7 +258,14 @@ function Dashboard() {
         </div>
         <div className="header-right">
           <div className="user-info">
-            <span>Olá, {displayName || (currentUser?.email ? currentUser.email.split('@')[0] : "Usuário")}</span>
+            <span>
+              Olá, {displayName || (currentUser?.email ? currentUser.email.split('@')[0] : "Usuário")}
+              {isAdmin() && (
+                <Tag color="gold" style={{ marginLeft: '8px' }}>
+                  Administrador
+                </Tag>
+              )}
+            </span>
           </div>
           <Space>
             <Dropdown
